@@ -34,7 +34,26 @@ export type SheetState =
   | { kind: "food"; food: FoodItem }
   | { kind: "recipe"; recipe: Recipe; slot: MealSlot }
   | { kind: "options"; title: string; subtitle: string; options: SheetOption[] }
-  | { kind: "feedback" };
+  | { kind: "feedback" }
+  | { kind: "customFood"; presetName: string };
+
+export interface CustomFoodDraft {
+  name: string;
+  cal: string;
+  p: string;
+  c: string;
+  f: string;
+  base: string;
+}
+
+export const defaultCustomFoodDraft = (presetName = ""): CustomFoodDraft => ({
+  name: presetName,
+  cal: "",
+  p: "",
+  c: "",
+  f: "",
+  base: "",
+});
 
 export interface CardioDraft {
   type: string;

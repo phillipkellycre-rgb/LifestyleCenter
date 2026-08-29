@@ -14,13 +14,15 @@ export default function FuelTab() {
   const planViewMode = useStore((s) => s.planView);
   const setPlanView = useStore((s) => s.setPlanView);
   const openRecipeSheet = useStore((s) => s.openRecipeSheet);
+  const openCustomFoodSheet = useStore((s) => s.openCustomFoodSheet);
   const swapMeal = useStore((s) => s.swapMeal);
   const toggleGrocery = useStore((s) => s.toggleGrocery);
   const setSheetSlot = useStore((s) => s.setSheetSlot);
 
   const dateStr = today();
   const fq = foodQuery.trim().toLowerCase();
-  const matches = fq ? FOODS.filter((f) => f.name.toLowerCase().includes(fq)) : [];
+  const allFoods = [...(db.customFoods || []), ...FOODS];
+  const matches = fq ? allFoods.filter((f) => f.name.toLowerCase().includes(fq)) : [];
   const hint = fq
     ? matches.length
       ? `${matches.length} MATCHES`
@@ -66,6 +68,14 @@ export default function FuelTab() {
             </div>
           </button>
         ))}
+        {fq && (
+          <button
+            onClick={() => openCustomFoodSheet(foodQuery.trim())}
+            className="w-full text-left py-2.5 px-0.5 border-0 bg-transparent cursor-pointer font-mono text-[11px] tracking-[0.04em] text-gold-dim"
+          >
+            + ADD &quot;{foodQuery.trim()}&quot; WITH REAL NUMBERS
+          </button>
+        )}
       </section>
 
       <section className="px-[22px] pt-[18px]">

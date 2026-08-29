@@ -195,6 +195,8 @@ export interface Db {
   profile: Profile;
   program: Program;
   history: Session[];
+  /** User-added foods with real macros, searched alongside the built-in library. */
+  customFoods: FoodItem[];
   weights: BodyWeightEntry[];
   measures: Record<MeasurementSite, MeasurementPair>;
   foodLog: FoodLog;

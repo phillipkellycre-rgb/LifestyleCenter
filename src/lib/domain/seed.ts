@@ -37,6 +37,7 @@ export function emptyState(): Db {
     profile,
     program,
     history: [],
+    customFoods: [],
     weights: [{ date: today, lb: profile.weight }],
     measures: {
       Waist: [0, 0],

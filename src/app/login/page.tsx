@@ -46,8 +46,10 @@ export default function LoginPage() {
         <form onSubmit={submit} className="w-full flex flex-col items-center gap-4">
           <input
             type="password"
-            inputMode="numeric"
             autoFocus
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             value={passcode}
             onChange={(e) => {
               setPasscode(e.target.value);

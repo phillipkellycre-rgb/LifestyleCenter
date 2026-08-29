@@ -12,7 +12,17 @@ import { currentWeek, today, todayDayIndex } from "@/lib/domain/selectors";
 import { clamp } from "@/lib/domain/util";
 import { dbRepository } from "@/lib/repository/dbRepository";
 import type { Db, FoodItem, MealSlot, MeasurementSite, Recipe, SessionFeedback } from "@/lib/domain/types";
-import { CARDIO_TYPES, defaultFeedback, type CardioDraft, type SheetOption, type SheetState, type TabId, type WorkoutSession } from "./uiTypes";
+import {
+  CARDIO_TYPES,
+  defaultCustomFoodDraft,
+  defaultFeedback,
+  type CardioDraft,
+  type CustomFoodDraft,
+  type SheetOption,
+  type SheetState,
+  type TabId,
+  type WorkoutSession,
+} from "./uiTypes";
 
 interface StoreState {
   hydrated: boolean;
@@ -27,6 +37,7 @@ interface StoreState {
   sheet: SheetState | null;
   sheetQty: number;
   sheetSlot: MealSlot;
+  customFoodDraft: CustomFoodDraft;
 
   weightInput: string;
   weightError: string;
@@ -57,13 +68,17 @@ interface StoreState {
   openFoodSheet: (food: FoodItem) => void;
   openRecipeSheet: (recipe: Recipe, slot: MealSlot) => void;
   openOptionsSheet: (title: string, subtitle: string, options: SheetOption[]) => void;
+  openCustomFoodSheet: (presetName: string) => void;
   closeSheet: () => void;
   setSheetSlot: (slot: MealSlot) => void;
   qtyUp: () => void;
   qtyDown: () => void;
-  confirmLog: () => void;
-  recipeLog: () => void;
+  confirmLog: (macros: { cal: number; p: number; c: number; f: number }) => void;
+  recipeLog: (macros: { cal: number; p: number; c: number; f: number }) => void;
   recipeToGrocery: () => void;
+
+  setCustomFoodField: (field: keyof CustomFoodDraft, value: string) => void;
+  saveCustomFood: () => void;
 
   logFood: (slot: MealSlot, food: { name: string; cal: number; p: number; c: number; f: number }, qty: number) => void;
   addWater: (oz: number) => void;
@@ -140,6 +155,7 @@ export const useStore = create<StoreState>((set, get) => ({
   sheet: null,
   sheetQty: 1,
   sheetSlot: "Lunch",
+  customFoodDraft: defaultCustomFoodDraft(),
 
   weightInput: "",
   weightError: "",
@@ -196,23 +212,27 @@ export const useStore = create<StoreState>((set, get) => ({
   openFoodSheet: (food) => set({ sheet: { kind: "food", food }, sheetQty: 1 }),
   openRecipeSheet: (recipe, slot) => set({ sheet: { kind: "recipe", recipe, slot } }),
   openOptionsSheet: (title, subtitle, options) => set({ sheet: { kind: "options", title, subtitle, options } }),
+  openCustomFoodSheet: (presetName) =>
+    set({ sheet: { kind: "customFood", presetName }, customFoodDraft: defaultCustomFoodDraft(presetName) }),
   closeSheet: () => set({ sheet: null }),
   setSheetSlot: (sheetSlot) => set({ sheetSlot }),
   qtyUp: () => set((s) => ({ sheetQty: Math.round((s.sheetQty + 0.5) * 10) / 10 })),
   qtyDown: () => set((s) => ({ sheetQty: Math.max(0.5, Math.round((s.sheetQty - 0.5) * 10) / 10) })),
 
-  confirmLog: () => {
-    const { sheet, sheetSlot, sheetQty } = get();
+  confirmLog: (macros) => {
+    const { sheet, sheetSlot } = get();
     if (!sheet || sheet.kind !== "food") return;
-    get().logFood(sheetSlot, sheet.food, sheetQty);
+    // macros are already the final (possibly hand-edited) totals for this
+    // entry, so log at qty 1 — logFood's qty multiplier would double-apply
+    // the scaling the sheet already did.
+    get().logFood(sheetSlot, { name: sheet.food.name, ...macros }, 1);
     set({ sheet: null, foodQuery: "" });
   },
 
-  recipeLog: () => {
+  recipeLog: (macros) => {
     const { sheet } = get();
     if (!sheet || sheet.kind !== "recipe") return;
-    const r = sheet.recipe;
-    get().logFood(sheet.slot, { name: r.name, cal: r.cal, p: r.p, c: r.c, f: r.f }, 1);
+    get().logFood(sheet.slot, { name: sheet.recipe.name, ...macros }, 1);
     set({ sheet: null });
   },
 
@@ -228,6 +248,29 @@ export const useStore = create<StoreState>((set, get) => ({
     });
     set({ sheet: null });
     get().flash(r.ingredients.length + " ingredients on the list");
+  },
+
+  setCustomFoodField: (field, value) => set((s) => ({ customFoodDraft: { ...s.customFoodDraft, [field]: value } })),
+
+  saveCustomFood: () => {
+    const d = get().customFoodDraft;
+    const name = d.name.trim();
+    const cal = parseFloat(d.cal);
+    if (!name || isNaN(cal)) return;
+    get().edit((db) => {
+      db.customFoods = db.customFoods || [];
+      db.customFoods.push({
+        id: Date.now(),
+        name,
+        cal: Math.round(cal),
+        p: Math.round(parseFloat(d.p) || 0),
+        c: Math.round(parseFloat(d.c) || 0),
+        f: Math.round(parseFloat(d.f) || 0),
+        base: d.base.trim() || "per serving",
+      });
+    });
+    set({ sheet: null });
+    get().flash(name + " added to your foods");
   },
 
   logFood: (slot, food, qty) => {
