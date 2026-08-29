@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Single-user app: one row holds the entire synced app state as JSON so the
+// domain layer (src/lib/domain) doesn't need a relational rewrite. See
+// src/lib/domain/types.ts (Db) for the shape stored in `data`.
+model AppState {
+  id        String   @id @default("singleton")
+  data      Json
+  updatedAt DateTime @updatedAt
+}
