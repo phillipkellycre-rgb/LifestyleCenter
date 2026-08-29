@@ -31,6 +31,13 @@ export interface CardioRowVM {
   detail: string;
 }
 
+export interface BpRowVM {
+  label: string;
+  category: string;
+  categoryColor: string;
+  detail: string;
+}
+
 export interface RecoveryFieldVM {
   key: "sleep" | "energy" | "soreness" | "stress";
   label: string;
@@ -59,6 +66,8 @@ export interface ProgressVM {
   measures: MeasureRowVM[];
   prRows: PrRowVM[];
   cardioRows: CardioRowVM[];
+  bpRows: BpRowVM[];
+  bpLatestNote: string;
   recovery: RecoveryFieldVM[];
   recoveryAdvice: string;
   calendarLabel: string;
@@ -124,6 +133,19 @@ export function progressView(db: Db, today: string): ProgressVM {
     detail: `${c.dist ? `${c.dist} mi · ${(c.min / c.dist).toFixed(1)}/mi · ` : ""}${c.hr ? `${c.hr} bpm` : ""} · ${c.date.slice(5)}`,
   }));
 
+  const bpRows: BpRowVM[] = (db.bloodPressure || []).slice(0, 8).map((r) => {
+    const [category, categoryColor] = bpCategory(r.systolic, r.diastolic);
+    return {
+      label: `${r.systolic}/${r.diastolic}`,
+      category,
+      categoryColor,
+      detail: `${r.pulse ? `${r.pulse} bpm · ` : ""}${r.date.slice(5)}`,
+    };
+  });
+  const bpLatestNote = bpRows.length
+    ? `Latest reading: ${bpRows[0].label} — ${bpRows[0].category}.`
+    : "Log a reading to start tracking your trend.";
+
   const rec = (db.recovery || {})[today] || { sleep: 7, energy: 7, soreness: 4, stress: 4 };
   const recovery: RecoveryFieldVM[] = [
     { key: "sleep", label: "Sleep (h)", min: 3, max: 11, step: 0.5, value: rec.sleep },
@@ -177,6 +199,8 @@ export function progressView(db: Db, today: string): ProgressVM {
     measures,
     prRows,
     cardioRows,
+    bpRows,
+    bpLatestNote,
     recovery,
     recoveryAdvice,
     calendarLabel,
@@ -185,3 +209,16 @@ export function progressView(db: Db, today: string): ProgressVM {
 }
 
 export const CARDIO_TYPES = ["Running", "Walking", "Cycling", "Swimming", "Rowing", "Stairmaster", "Elliptical"];
+
+/**
+ * Informal category labels only (AHA-style thresholds) — not medical
+ * advice. Higher of the two readings' category wins, matching how these
+ * charts are conventionally read.
+ */
+function bpCategory(systolic: number, diastolic: number): [string, string] {
+  if (systolic >= 180 || diastolic >= 120) return ["Crisis — seek care", "var(--error)"];
+  if (systolic >= 140 || diastolic >= 90) return ["High (Stage 2)", "var(--error)"];
+  if (systolic >= 130 || diastolic >= 80) return ["High (Stage 1)", "var(--gold-dim)"];
+  if (systolic >= 120) return ["Elevated", "var(--gold-dim)"];
+  return ["Normal", "var(--navy-3)"];
+}

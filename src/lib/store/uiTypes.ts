@@ -64,4 +64,12 @@ export interface CardioDraft {
 
 export const CARDIO_TYPES = ["Running", "Walking", "Cycling", "Swimming", "Rowing", "Stairmaster", "Elliptical"];
 
+export interface BpDraft {
+  systolic: string;
+  diastolic: string;
+  pulse: string;
+}
+
+export const defaultBpDraft = (): BpDraft => ({ systolic: "", diastolic: "", pulse: "" });
+
 export const defaultFeedback = (): SessionFeedback => ({ energy: 7, difficulty: 7, soreness: 4, overall: 8 });

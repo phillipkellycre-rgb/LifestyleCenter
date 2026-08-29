@@ -14,8 +14,10 @@ import { dbRepository } from "@/lib/repository/dbRepository";
 import type { Db, FoodItem, MealSlot, MeasurementSite, Recipe, SessionFeedback } from "@/lib/domain/types";
 import {
   CARDIO_TYPES,
+  defaultBpDraft,
   defaultCustomFoodDraft,
   defaultFeedback,
+  type BpDraft,
   type CardioDraft,
   type CustomFoodDraft,
   type SheetOption,
@@ -44,6 +46,9 @@ interface StoreState {
 
   cardioDraft: CardioDraft;
   cardioError: string;
+
+  bpDraft: BpDraft;
+  bpError: string;
 
   measureDraft: Partial<Record<MeasurementSite, string>>;
   chatDraft: string;
@@ -108,6 +113,8 @@ interface StoreState {
   commitMeasure: (site: MeasurementSite) => void;
   setCardioField: (field: keyof CardioDraft, v: string) => void;
   saveCardio: () => void;
+  setBpField: (field: keyof BpDraft, v: string) => void;
+  saveBp: () => void;
 
   setChatDraft: (v: string) => void;
   sendChat: () => void;
@@ -162,6 +169,9 @@ export const useStore = create<StoreState>((set, get) => ({
 
   cardioDraft: { type: CARDIO_TYPES[0], min: "", dist: "", hr: "" },
   cardioError: "",
+
+  bpDraft: defaultBpDraft(),
+  bpError: "",
 
   measureDraft: {},
   chatDraft: "",
@@ -526,6 +536,25 @@ export const useStore = create<StoreState>((set, get) => ({
     });
     set({ cardioDraft: { type: c.type, min: "", dist: "", hr: "" }, cardioError: "" });
     get().flash(c.type + " logged");
+  },
+
+  setBpField: (field, v) => set((s) => ({ bpDraft: { ...s.bpDraft, [field]: v }, bpError: "" })),
+  saveBp: () => {
+    const d = get().bpDraft;
+    const systolic = parseFloat(d.systolic);
+    const diastolic = parseFloat(d.diastolic);
+    if (isNaN(systolic) || isNaN(diastolic) || systolic <= 0 || diastolic <= 0) {
+      set({ bpError: "Systolic and diastolic are both required." });
+      return;
+    }
+    get().edit((db) => {
+      db.bloodPressure = [
+        { systolic, diastolic, pulse: parseFloat(d.pulse) || 0, date: today() },
+        ...(db.bloodPressure || []),
+      ];
+    });
+    set({ bpDraft: defaultBpDraft(), bpError: "" });
+    get().flash(`${systolic}/${diastolic} logged`);
   },
 
   setChatDraft: (chatDraft) => set({ chatDraft }),

@@ -18,6 +18,10 @@ export default function ProgressTab() {
   const setCardioField = useStore((s) => s.setCardioField);
   const cardioError = useStore((s) => s.cardioError);
   const saveCardio = useStore((s) => s.saveCardio);
+  const bpDraft = useStore((s) => s.bpDraft);
+  const setBpField = useStore((s) => s.setBpField);
+  const bpError = useStore((s) => s.bpError);
+  const saveBp = useStore((s) => s.saveBp);
   const edit = useStore((s) => s.edit);
 
   const dateStr = today();
@@ -165,6 +169,53 @@ export default function ProgressTab() {
           <div key={i} className="flex justify-between gap-2.5 py-2 border-b border-dashed border-hairline font-mono text-[11px]">
             <span>{c.label}</span>
             <span className="text-dim">{c.detail}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-card-bg border border-hairline rounded-[14px] p-4 mt-3.5">
+        <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Blood pressure</div>
+        <div className="grid grid-cols-3 gap-2 mt-2.5">
+          <input
+            className="lb-input"
+            type="number"
+            value={bpDraft.systolic}
+            onChange={(e) => setBpField("systolic", e.target.value)}
+            placeholder="Systolic"
+            aria-label="Systolic"
+          />
+          <input
+            className="lb-input"
+            type="number"
+            value={bpDraft.diastolic}
+            onChange={(e) => setBpField("diastolic", e.target.value)}
+            placeholder="Diastolic"
+            aria-label="Diastolic"
+          />
+          <input
+            className="lb-input"
+            type="number"
+            value={bpDraft.pulse}
+            onChange={(e) => setBpField("pulse", e.target.value)}
+            placeholder="Pulse"
+            aria-label="Pulse"
+          />
+        </div>
+        <button
+          onClick={saveBp}
+          className="w-full mt-2.5 py-2.5 bg-navy text-gold border-0 rounded-[10px] font-mono text-[11px] tracking-[0.1em] uppercase cursor-pointer"
+        >
+          Log reading
+        </button>
+        {bpError && <div className="font-mono text-[10px] text-error mt-1.5">{bpError}</div>}
+        <div className="font-mono text-[9.5px] text-dim mt-2.5">{v.bpLatestNote}</div>
+        {v.bpRows.map((r, i) => (
+          <div key={i} className="flex justify-between items-center gap-2.5 py-2 border-b border-dashed border-hairline">
+            <span className="font-mono text-[13px] font-bold">{r.label}</span>
+            <span className="font-mono text-[10px]" style={{ color: r.categoryColor }}>
+              {r.category}
+            </span>
+            <span className="font-mono text-[10px] text-dim">{r.detail}</span>
           </div>
         ))}
       </div>

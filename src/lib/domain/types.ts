@@ -179,6 +179,13 @@ export interface CardioSession {
   date: string;
 }
 
+export interface BloodPressureReading {
+  systolic: number;
+  diastolic: number;
+  pulse: number;
+  date: string;
+}
+
 export interface RecoveryLog {
   sleep: number;
   energy: number;
@@ -204,6 +211,7 @@ export interface Db {
   mealPlan: MealPlan;
   grocery: Record<string, number>;
   cardio: CardioSession[];
+  bloodPressure: BloodPressureReading[];
   recovery: Record<string, RecoveryLog>;
   chat: ChatMessage[];
   selWeek: number;
