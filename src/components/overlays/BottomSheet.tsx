@@ -85,8 +85,8 @@ export default function BottomSheet() {
     <>
       <div onClick={closeSheet} className="absolute inset-0 z-[95]" style={{ background: "var(--scrim)" }} />
       <div
-        className="lb-scroll absolute left-0 right-0 bottom-0 overflow-y-auto bg-paper z-[100] px-[22px] pt-4 pb-[26px]"
-        style={{ maxHeight: "82%", borderRadius: "22px 22px 0 0", boxShadow: "0 -20px 40px rgba(0,0,0,0.3)" }}
+        className="lb-scroll absolute left-0 right-0 bottom-0 overflow-y-auto bg-paper z-[100] px-[22px] pt-4 pb-[26px] rounded-t-[22px] lg:left-1/2 lg:right-auto lg:bottom-8 lg:-translate-x-1/2 lg:w-full lg:max-w-[560px] lg:rounded-[22px]"
+        style={{ maxHeight: "82%", boxShadow: "0 -20px 40px rgba(0,0,0,0.3)" }}
       >
         <div className="w-9 h-1 bg-hairline rounded-sm mx-auto mb-3.5" />
 

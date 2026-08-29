@@ -13,8 +13,11 @@ import ProgressTab from "./tabs/ProgressTab";
 import MoreTab from "./tabs/MoreTab";
 import { flushPendingSave, useStore } from "@/lib/store/useStore";
 import { mastheadFor } from "@/lib/view/masthead";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
+import DesktopShell from "./DesktopShell";
 
 export default function Shell() {
+  const isDesktop = useIsDesktop();
   const hydrated = useStore((s) => s.hydrated);
   const hydrate = useStore((s) => s.hydrate);
   const refresh = useStore((s) => s.refresh);
@@ -57,6 +60,10 @@ export default function Shell() {
 
   if (!hydrated) {
     return <div id="lb-stage" />;
+  }
+
+  if (isDesktop) {
+    return <DesktopShell />;
   }
 
   const masthead = mastheadFor(tab, db);

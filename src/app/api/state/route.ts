@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { emptyState } from "@/lib/domain/seed";
 import type { Db } from "@/lib/domain/types";
-import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -10,14 +10,25 @@ const SINGLETON_ID = "singleton";
 
 export async function GET() {
   const row = await prisma.appState.findUnique({ where: { id: SINGLETON_ID } });
-  if (!row) {
-    const fresh = emptyState();
-    await prisma.appState.create({
+  if (row) return NextResponse.json(row.data);
+
+  // Nothing exists yet — create it. Two first-ever requests can race here
+  // (e.g. React Strict Mode's double effect invocation, or two devices
+  // opening a brand-new account at the same instant); if another request
+  // won the create, just read back what it wrote instead of erroring.
+  const fresh = emptyState();
+  try {
+    const created = await prisma.appState.create({
       data: { id: SINGLETON_ID, data: fresh as unknown as Prisma.InputJsonValue },
     });
-    return NextResponse.json(fresh);
+    return NextResponse.json(created.data);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      const existing = await prisma.appState.findUnique({ where: { id: SINGLETON_ID } });
+      if (existing) return NextResponse.json(existing.data);
+    }
+    throw err;
   }
-  return NextResponse.json(row.data);
 }
 
 export async function PUT(req: NextRequest) {

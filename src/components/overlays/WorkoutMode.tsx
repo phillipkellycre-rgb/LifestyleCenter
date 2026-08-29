@@ -44,6 +44,7 @@ export default function WorkoutMode() {
         className="relative px-[22px] pt-[18px] pb-5"
         style={{ background: "linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%)" }}
       >
+        <div className="lg:max-w-[600px] lg:mx-auto">
         <div className="flex justify-between items-center">
           <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-gold">
             WORKOUT MODE · {session.name.toUpperCase()}
@@ -67,9 +68,10 @@ export default function WorkoutMode() {
             />
           ))}
         </div>
+        </div>
       </div>
 
-      <div className="px-[22px] pt-[18px]">
+      <div className="px-[22px] pt-[18px] lg:max-w-[600px] lg:mx-auto">
         <div className="flex gap-2.5">
           <Stat label="Last time" value={lastStr} />
           <Stat label="Today" value={cur.target} accent />
