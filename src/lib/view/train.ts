@@ -12,12 +12,18 @@ export interface WeekChipVM {
   border: string;
 }
 
+export interface DayExerciseVM {
+  exIndex: number;
+  exId: number;
+  name: string;
+}
+
 export interface DayRowVM {
   dayIndex: number;
   name: string;
   state: string;
   stateColor: string;
-  list: string;
+  exercises: DayExerciseVM[];
   startLabel: string;
 }
 
@@ -81,7 +87,7 @@ export function trainView(db: Db): TrainVM {
       name: d.name,
       state: logged.length ? "COMPLETED" : selWeek < week ? "MISSED" : selWeek === week ? "PLANNED" : "UPCOMING",
       stateColor: logged.length ? "var(--navy-3)" : selWeek < week ? "var(--error)" : "var(--dim)",
-      list: d.exercises.map((pe) => exerciseName(pe.exId)).join(" · "),
+      exercises: d.exercises.map((pe, exIndex) => ({ exIndex, exId: pe.exId, name: exerciseName(pe.exId) })),
       startLabel: logged.length ? "REVIEW / REPEAT SESSION" : "START THIS SESSION",
     };
   });

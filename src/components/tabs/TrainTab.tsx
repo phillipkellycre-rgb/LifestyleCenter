@@ -11,6 +11,7 @@ export default function TrainTab() {
   const db = useStore((s) => s.db);
   const setSelWeek = useStore((s) => s.edit);
   const startSession = useStore((s) => s.startSession);
+  const swapProgramExercise = useStore((s) => s.swapProgramExercise);
   const exQuery = useStore((s) => s.exQuery);
   const setExQuery = useStore((s) => s.setExQuery);
   const exGroup = useStore((s) => s.exGroup);
@@ -55,10 +56,20 @@ export default function TrainTab() {
                 {d.state}
               </div>
             </div>
-            <div className="font-mono text-[10.5px] text-dim mt-1 leading-[1.5]">{d.list}</div>
+            {d.exercises.map((e) => (
+              <div key={e.exIndex} className="flex items-center justify-between gap-2 mt-1.5">
+                <span className="font-mono text-[10.5px] text-dim">{e.name}</span>
+                <button
+                  onClick={() => swapProgramExercise(d.dayIndex, e.exIndex)}
+                  className="bg-transparent border-0 p-0 font-mono text-[9.5px] tracking-[0.04em] text-gold-dim cursor-pointer shrink-0"
+                >
+                  REPLACE
+                </button>
+              </div>
+            ))}
             <button
               onClick={() => startSession(d.dayIndex)}
-              className="mt-2 bg-transparent border-0 p-0 font-mono text-[10.5px] tracking-[0.06em] text-gold-dim cursor-pointer"
+              className="mt-2.5 bg-transparent border-0 p-0 font-mono text-[10.5px] tracking-[0.06em] text-gold-dim cursor-pointer"
             >
               {d.startLabel}
             </button>

@@ -20,9 +20,12 @@ self.addEventListener("activate", (e) => {
 });
 
 // Cache-first for same-origin app shell and fonts; network falls back to cache offline.
+// Never cache /api/* — that's the live sync endpoint (auth + app state), and a
+// cache-first hit there would silently serve stale data across devices.
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
+  if (new URL(req.url).pathname.startsWith("/api/")) return;
   e.respondWith(
     caches.match(req).then((hit) => {
       const fresh = fetch(req)

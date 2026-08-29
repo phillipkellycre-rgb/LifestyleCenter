@@ -15,6 +15,7 @@ export default function FuelTab() {
   const setPlanView = useStore((s) => s.setPlanView);
   const openRecipeSheet = useStore((s) => s.openRecipeSheet);
   const openCustomFoodSheet = useStore((s) => s.openCustomFoodSheet);
+  const openEditFoodEntry = useStore((s) => s.openEditFoodEntry);
   const swapMeal = useStore((s) => s.swapMeal);
   const toggleGrocery = useStore((s) => s.toggleGrocery);
   const setSheetSlot = useStore((s) => s.setSheetSlot);
@@ -91,11 +92,19 @@ export default function FuelTab() {
             <div className="h-px bg-hairline mt-2 mb-1" />
             {d.items.map((i) => (
               <div key={i.index} className="flex items-center gap-2.5 py-2.5 border-b border-dashed border-hairline">
-                <div className="flex-1 min-w-0">
+                <button
+                  onClick={() => openEditFoodEntry(d.slot, i.index)}
+                  className="flex-1 min-w-0 text-left bg-transparent border-0 p-0 cursor-pointer"
+                >
                   <div className="font-semibold text-[13.5px]">{i.name}</div>
                   <div className="font-mono text-[10px] text-dim mt-0.5">{i.macros}</div>
-                </div>
-                <div className="font-mono text-[13px] font-bold">{i.kcal}</div>
+                </button>
+                <button
+                  onClick={() => openEditFoodEntry(d.slot, i.index)}
+                  className="font-mono text-[13px] font-bold bg-transparent border-0 cursor-pointer"
+                >
+                  {i.kcal}
+                </button>
                 <button
                   onClick={() =>
                     edit((db2) => {

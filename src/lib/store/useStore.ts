@@ -74,6 +74,8 @@ interface StoreState {
   openRecipeSheet: (recipe: Recipe, slot: MealSlot) => void;
   openOptionsSheet: (title: string, subtitle: string, options: SheetOption[]) => void;
   openCustomFoodSheet: (presetName: string) => void;
+  openEditFoodEntry: (slot: MealSlot, index: number) => void;
+  updateFoodLogEntry: (macros: { cal: number; p: number; c: number; f: number }) => void;
   closeSheet: () => void;
   setSheetSlot: (slot: MealSlot) => void;
   qtyUp: () => void;
@@ -99,6 +101,7 @@ interface StoreState {
   addSet: () => void;
   dropSet: () => void;
   openSwapExercise: () => void;
+  swapProgramExercise: (dayIndex: number, exIndex: number) => void;
   setRest: (n: number) => void;
   tickRest: () => void;
   prevExercise: () => void;
@@ -224,6 +227,26 @@ export const useStore = create<StoreState>((set, get) => ({
   openOptionsSheet: (title, subtitle, options) => set({ sheet: { kind: "options", title, subtitle, options } }),
   openCustomFoodSheet: (presetName) =>
     set({ sheet: { kind: "customFood", presetName }, customFoodDraft: defaultCustomFoodDraft(presetName) }),
+  openEditFoodEntry: (slot, index) => {
+    const entry = (get().db.foodLog[today()] || {})[slot]?.[index];
+    if (!entry) return;
+    set({ sheet: { kind: "editFoodEntry", slot, index, name: entry.name } });
+  },
+  updateFoodLogEntry: (macros) => {
+    const { sheet } = get();
+    if (!sheet || sheet.kind !== "editFoodEntry") return;
+    const dateStr = today();
+    get().edit((db) => {
+      const entry = db.foodLog[dateStr]?.[sheet.slot]?.[sheet.index];
+      if (!entry) return;
+      entry.cal = macros.cal;
+      entry.p = macros.p;
+      entry.c = macros.c;
+      entry.f = macros.f;
+    });
+    set({ sheet: null });
+    get().flash("Entry updated");
+  },
   closeSheet: () => set({ sheet: null }),
   setSheetSlot: (sheetSlot) => set({ sheetSlot }),
   qtyUp: () => set((s) => ({ sheetQty: Math.round((s.sheetQty + 0.5) * 10) / 10 })),
@@ -443,6 +466,33 @@ export const useStore = create<StoreState>((set, get) => ({
             return { session: session2, sheet: null };
           });
           get().flash("Swapped to " + alt.name);
+        },
+      }))
+    );
+  },
+
+  swapProgramExercise: (dayIndex, exIndex) => {
+    const db = get().db;
+    const day = db.program.days[dayIndex];
+    const current = day.exercises[exIndex];
+    const ex = EXERCISES[current.exId];
+    const alts = EXERCISES.filter((e) => e.id !== ex.id && e.group === ex.group).slice(0, 8);
+    get().openOptionsSheet(
+      "Replace " + ex.name,
+      "Same muscle group — this changes " + day.name + " going forward",
+      alts.map((alt) => ({
+        name: alt.name,
+        detail: alt.group + " · " + alt.equip + " · " + (alt.compound ? "compound" : "isolation"),
+        pick: () => {
+          get().edit((d) => {
+            const pe = d.program.days[dayIndex].exercises[exIndex];
+            pe.exId = alt.id;
+            pe.repLow = alt.compound ? 6 : 10;
+            pe.repHigh = alt.compound ? 8 : 14;
+            pe.weight = seedWeightFor(alt, d.profile.weight);
+          });
+          get().closeSheet();
+          get().flash(ex.name + " replaced with " + alt.name);
         },
       }))
     );

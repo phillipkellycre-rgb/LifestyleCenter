@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SLOTS } from "@/lib/data";
+import { today } from "@/lib/domain/selectors";
 import { useStore } from "@/lib/store/useStore";
 
 interface Macros {
@@ -12,8 +13,10 @@ interface Macros {
 }
 
 export default function BottomSheet() {
+  const db = useStore((s) => s.db);
   const sheet = useStore((s) => s.sheet);
   const closeSheet = useStore((s) => s.closeSheet);
+  const updateFoodLogEntry = useStore((s) => s.updateFoodLogEntry);
   const sheetQty = useStore((s) => s.sheetQty);
   const sheetSlot = useStore((s) => s.sheetSlot);
   const setSheetSlot = useStore((s) => s.setSheetSlot);
@@ -39,6 +42,8 @@ export default function BottomSheet() {
   const [lastFoodKey, setLastFoodKey] = useState<string | null>(null);
   const [recipeMacros, setRecipeMacros] = useState<Macros>({ cal: 0, p: 0, c: 0, f: 0 });
   const [lastRecipeKey, setLastRecipeKey] = useState<number | null>(null);
+  const [editMacros, setEditMacros] = useState<Macros>({ cal: 0, p: 0, c: 0, f: 0 });
+  const [lastEditKey, setLastEditKey] = useState<string | null>(null);
 
   if (sheet?.kind === "food") {
     const key = `${sheet.food.id}:${sheetQty}`;
@@ -56,6 +61,15 @@ export default function BottomSheet() {
   if (sheet?.kind === "recipe" && sheet.recipe.id !== lastRecipeKey) {
     setLastRecipeKey(sheet.recipe.id);
     setRecipeMacros({ cal: sheet.recipe.cal, p: sheet.recipe.p, c: sheet.recipe.c, f: sheet.recipe.f });
+  }
+
+  if (sheet?.kind === "editFoodEntry") {
+    const key = `${sheet.slot}:${sheet.index}`;
+    if (key !== lastEditKey) {
+      setLastEditKey(key);
+      const entry = db.foodLog[today()]?.[sheet.slot]?.[sheet.index];
+      if (entry) setEditMacros({ cal: entry.cal, p: entry.p, c: entry.c, f: entry.f });
+    }
   }
 
   if (!sheet) return null;
@@ -272,6 +286,25 @@ export default function BottomSheet() {
               className="w-full mt-4.5 py-3.5 bg-navy text-gold border-0 rounded-xl font-mono text-[12px] tracking-[0.1em] uppercase font-bold cursor-pointer disabled:opacity-50"
             >
               Save to my foods
+            </button>
+          </>
+        )}
+
+        {sheet.kind === "editFoodEntry" && (
+          <>
+            <div className="font-serif font-semibold text-[20px]">{sheet.name}</div>
+            <div className="font-mono text-[10.5px] text-dim mt-1">Editing this entry in {sheet.slot}</div>
+            <div className="flex gap-2 mt-4">
+              {macroField("KCAL", editMacros.cal, (v) => setEditMacros({ ...editMacros, cal: v }))}
+              {macroField("P (g)", editMacros.p, (v) => setEditMacros({ ...editMacros, p: v }))}
+              {macroField("C (g)", editMacros.c, (v) => setEditMacros({ ...editMacros, c: v }))}
+              {macroField("F (g)", editMacros.f, (v) => setEditMacros({ ...editMacros, f: v }))}
+            </div>
+            <button
+              onClick={() => updateFoodLogEntry(editMacros)}
+              className="w-full mt-4.5 py-3.5 bg-navy text-gold border-0 rounded-xl font-mono text-[12px] tracking-[0.1em] uppercase font-bold cursor-pointer"
+            >
+              Save changes
             </button>
           </>
         )}
