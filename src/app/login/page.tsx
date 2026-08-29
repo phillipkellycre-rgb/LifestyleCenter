@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import PjkLogo from "@/components/PjkLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,10 +41,7 @@ export default function LoginPage() {
       style={{ background: "linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%)" }}
     >
       <div className="w-full max-w-[340px] flex flex-col items-center">
-        {/* Placeholder mark — swap for the real PJK logo asset in public/logo.png */}
-        <div className="w-[120px] h-[120px] rounded-full border-[3px] border-gold flex items-center justify-center mb-8">
-          <span className="font-serif font-semibold text-[44px] text-white">L</span>
-        </div>
+        <PjkLogo size={140} className="mb-8" />
 
         <form onSubmit={submit} className="w-full flex flex-col items-center gap-4">
           <input
