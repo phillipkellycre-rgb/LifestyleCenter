@@ -57,6 +57,8 @@ export function emptyState(): Db {
     bloodPressure: [],
     recovery: {},
     wellness: [],
+    supplements: [],
+    supplementLog: {},
     chat: [],
     selWeek: 1,
     completedToday: [],

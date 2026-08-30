@@ -12,7 +12,8 @@ import { currentWeek, today, todayDayIndex } from "@/lib/domain/selectors";
 import { clamp } from "@/lib/domain/util";
 import { dbRepository } from "@/lib/repository/dbRepository";
 import { GROCERY_CATALOG, groceryHasItem } from "@/lib/view/fuel";
-import type { Db, FoodItem, MealSlot, MeasurementSite, Recipe, SessionFeedback } from "@/lib/domain/types";
+import { supplementTarget } from "@/lib/view/supplements";
+import type { Db, FoodItem, MealSlot, MeasurementSite, Recipe, SessionFeedback, SupplementFrequency } from "@/lib/domain/types";
 import {
   CARDIO_TYPES,
   defaultBpDraft,
@@ -37,6 +38,7 @@ interface StoreState {
   foodQuery: string;
   planView: "plan" | "grocery";
   groceryDraft: { name: string; qty: string };
+  supplementDraft: { name: string; amount: string; frequency: SupplementFrequency };
   groceryPickerQuery: string;
   groceryPickerSelected: string[];
   calendarMonthOffset: number;
@@ -101,6 +103,10 @@ interface StoreState {
   setGroceryDraftField: (field: "name" | "qty", value: string) => void;
   addGroceryItem: () => void;
   removeGroceryItem: (key: string) => void;
+  setSupplementDraftField: (field: "name" | "amount" | "frequency", value: string) => void;
+  addSupplement: () => void;
+  removeSupplement: (id: string) => void;
+  cycleSupplementTaken: (id: string) => void;
   openGroceryPicker: () => void;
   setGroceryPickerQuery: (q: string) => void;
   toggleGroceryPickerItem: (name: string) => void;
@@ -180,6 +186,7 @@ export const useStore = create<StoreState>((set, get) => ({
   foodQuery: "",
   planView: "plan",
   groceryDraft: { name: "", qty: "" },
+  supplementDraft: { name: "", amount: "", frequency: "Once daily" },
   groceryPickerQuery: "",
   groceryPickerSelected: [],
   calendarMonthOffset: 0,
@@ -391,6 +398,38 @@ export const useStore = create<StoreState>((set, get) => ({
       db.groceryRemoved = db.groceryRemoved || {};
       db.groceryRemoved[key] = true;
       if (db.grocery) delete db.grocery[key];
+    });
+  },
+
+  setSupplementDraftField: (field, value) =>
+    set((s) => ({ supplementDraft: { ...s.supplementDraft, [field]: value } })),
+  addSupplement: () => {
+    const d = get().supplementDraft;
+    const name = d.name.trim();
+    if (!name) return;
+    const id = `supp:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
+    get().edit((db) => {
+      db.supplements = db.supplements || [];
+      db.supplements.push({ id, name, amount: d.amount.trim() || "—", frequency: d.frequency });
+    });
+    set({ supplementDraft: { name: "", amount: "", frequency: d.frequency } });
+    get().flash(name + " added to your supplements");
+  },
+  removeSupplement: (id) => {
+    get().edit((db) => {
+      db.supplements = (db.supplements || []).filter((s) => s.id !== id);
+    });
+  },
+  cycleSupplementTaken: (id) => {
+    const date = today();
+    get().edit((db) => {
+      const supp = (db.supplements || []).find((s) => s.id === id);
+      if (!supp) return;
+      const target = supplementTarget(supp.frequency);
+      db.supplementLog = db.supplementLog || {};
+      db.supplementLog[date] = db.supplementLog[date] || {};
+      const cur = db.supplementLog[date][id] || 0;
+      db.supplementLog[date][id] = cur >= target ? 0 : cur + 1;
     });
   },
 

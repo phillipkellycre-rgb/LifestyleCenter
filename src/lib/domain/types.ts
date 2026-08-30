@@ -217,6 +217,15 @@ export interface GroceryCustomItem {
   qty: string;
 }
 
+export type SupplementFrequency = "Once daily" | "Twice daily" | "Three times daily" | "As needed";
+
+export interface Supplement {
+  id: string;
+  name: string;
+  amount: string;
+  frequency: SupplementFrequency;
+}
+
 export interface Db {
   profile: Profile;
   program: Program;
@@ -238,6 +247,9 @@ export interface Db {
   recovery: Record<string, RecoveryLog>;
   /** One check-in per date — mood/stress/anxiety, upserted on save. */
   wellness: WellnessEntry[];
+  supplements: Supplement[];
+  /** date -> supplement id -> times taken that day. */
+  supplementLog: Record<string, Record<string, number>>;
   chat: ChatMessage[];
   selWeek: number;
   completedToday: number[];
