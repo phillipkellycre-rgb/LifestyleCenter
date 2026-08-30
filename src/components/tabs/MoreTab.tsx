@@ -3,10 +3,38 @@
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { computeTargets } from "@/lib/domain/calc";
+import { phaseFor } from "@/lib/domain/program";
+import { currentWeek } from "@/lib/domain/selectors";
 import { fmt } from "@/lib/domain/util";
 import { useStore } from "@/lib/store/useStore";
 import { COACH_PROMPTS, insightsView } from "@/lib/view/more";
-import type { ActivityLevel, Goal, Sex } from "@/lib/domain/types";
+import type { ActivityLevel, Goal, Phase, Sex } from "@/lib/domain/types";
+
+const PHASE_ROWS: { phase: Phase; weeks: string; blurb: string }[] = [
+  { phase: "Foundation", weeks: "Weeks 1–3", blurb: "Groove the rep ranges at a manageable effort before pushing load." },
+  { phase: "Overload", weeks: "Weeks 5–7", blurb: "Same double-progression engine — you're further into the block." },
+  { phase: "Intensify", weeks: "Weeks 9–11", blurb: "Same engine again — the label just marks where you are in the 12." },
+  { phase: "Deload", weeks: "Every 4th week", blurb: "Load cuts to 85% and one set drops so fatigue actually clears." },
+];
+
+const PROGRESSION_RULES = [
+  {
+    kicker: "No history yet",
+    text: "Start at the seeded weight, bottom of the rep range — leave two reps in the tank.",
+  },
+  {
+    kicker: "Cleared the top of the range",
+    text: "Every set hit the rep ceiling at RPE ≤ 8.5 → weight goes up by the lift's increment, reps reset to the floor.",
+  },
+  {
+    kicker: "Missed the floor or ground it out",
+    text: "A set fell below the rep floor, or average RPE ≥ 9.3 → weight backs off 8%, reps reset to the floor.",
+  },
+  {
+    kicker: "Anywhere in between",
+    text: "Weight holds. Target is one more rep than your best set last time — climb the rep range before the next load jump.",
+  },
+];
 
 const SEX_OPTIONS: Sex[] = ["Male", "Female"];
 const ACTIVITY_OPTIONS: ActivityLevel[] = ["Sedentary", "Light", "Moderate", "High", "Athlete"];
@@ -36,6 +64,8 @@ export default function MoreTab() {
   const t = computeTargets(db.profile);
   const insights = insightsView(db);
   const goals = db.profile.goals || [];
+  const week = currentWeek(db);
+  const phase = phaseFor(week);
   const engineLine = `Mifflin-St Jeor BMR × ${db.profile.activity.toLowerCase()} activity, ${
     goals.includes("Fat loss") ? "500 kcal deficit" : goals.includes("Muscle gain") ? "300 kcal surplus" : "maintenance"
   }. Fiber target ${t.fiber}g. Everything you log is synced to your account.`;
@@ -99,6 +129,50 @@ export default function MoreTab() {
           </div>
         </div>
       ))}
+
+      <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim mt-[26px]">How your program works</div>
+      <div className="text-[13.5px] mt-2 leading-[1.5]">
+        {db.program.title} · Week {week} of 12 · currently <b>{phase}</b>
+      </div>
+
+      <div className="mt-3">
+        {PHASE_ROWS.map((row) => {
+          const active = row.phase === phase;
+          return (
+            <div
+              key={row.phase}
+              className="flex gap-3 py-[10px] border-b border-dashed border-hairline"
+              style={{ opacity: active ? 1 : 0.65 }}
+            >
+              <div className="w-[92px] shrink-0">
+                <div className="font-mono text-[9px] tracking-[0.1em] uppercase" style={{ color: active ? "var(--gold-dim)" : "var(--dim)" }}>
+                  {row.phase}
+                </div>
+                <div className="font-mono text-[9.5px] text-dim mt-0.5">{row.weeks}</div>
+              </div>
+              <div className="text-[12.5px] flex-1">{row.blurb}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="font-mono text-[9px] text-dim mt-1.5">
+        Deload lands on every 4th week regardless of block, so it always overrides Foundation/Overload/Intensify.
+      </div>
+
+      <div className="font-mono text-[9px] tracking-[0.12em] uppercase text-dim mt-4">Per-lift progression</div>
+      <div className="text-[11.5px] text-dim mt-1 leading-[1.5]">
+        Every lift is judged on its own last logged session — not a fixed script:
+      </div>
+      {PROGRESSION_RULES.map((r, i) => (
+        <div key={i} className="py-[9px] border-b border-dashed border-hairline">
+          <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-gold-dim">{r.kicker}</div>
+          <div className="text-[13px] mt-[3px]">{r.text}</div>
+        </div>
+      ))}
+      <div className="font-mono text-[9px] text-dim mt-1.5 leading-[1.5]">
+        On a Deload week, whatever that logic lands on gets cut to 85% weight with one set dropped, on top of the rule
+        above.
+      </div>
 
       <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim mt-[26px]">Profile &amp; targets</div>
       <div className="grid grid-cols-2 gap-2.5 mt-2.5">
