@@ -10,12 +10,39 @@ export default function TodayTab() {
   const logFood = useStore((s) => s.logFood);
   const setTab = useStore((s) => s.setTab);
   const addWater = useStore((s) => s.addWater);
+  const setPlanView = useStore((s) => s.setPlanView);
 
   const v = todayView(db);
+  const isShoppingDay = new Date().getDay() === 0;
+
+  function goToGroceryList() {
+    setPlanView("grocery");
+    setTab("fuel");
+  }
 
   return (
     <>
-      <section className="px-[22px] pt-5">
+      {isShoppingDay && (
+        <section className="px-[22px] pt-5">
+          <div
+            className="rounded-[14px] p-4"
+            style={{ background: "var(--note-bg)", border: "1px solid var(--note-border)" }}
+          >
+            <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-gold-dim">Sunday reminder</div>
+            <div className="text-[14px] font-semibold mt-1" style={{ color: "var(--note-ink)" }}>
+              Time to shop for the week
+            </div>
+            <button
+              onClick={goToGroceryList}
+              className="w-full mt-3 py-2.5 rounded-[10px] bg-navy text-gold border-0 font-mono text-[11px] tracking-[0.06em] uppercase cursor-pointer"
+            >
+              Grocery list →
+            </button>
+          </div>
+        </section>
+      )}
+
+      <section className="px-[22px] pt-[22px]">
         <div className="flex items-baseline justify-between">
           <span className="font-serif font-semibold text-[18px]">Training Manifest</span>
           <span className="font-mono text-[10px] text-dim">{v.workoutTag}</span>
