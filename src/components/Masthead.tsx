@@ -29,13 +29,6 @@ export default function Masthead({ eyebrow, title, sub, ringPct, ringVal, ringLa
       className="relative overflow-hidden px-[22px] pt-[18px] pb-[22px]"
       style={{ background: "linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%)" }}
     >
-      <div
-        className="absolute inset-0 pointer-events-none opacity-35"
-        style={{
-          backgroundImage: "linear-gradient(var(--hairline-light) 1px, transparent 1px)",
-          backgroundSize: "100% 22px",
-        }}
-      />
       <div className="relative flex items-start justify-between gap-3.5">
         <div className="min-w-0">
           <div className="font-mono text-[10.5px] tracking-[0.2em] uppercase text-gold truncate">{eyebrow}</div>
