@@ -205,6 +205,11 @@ export default function TodayTab() {
       </section>
 
       <section className="px-[22px] pt-[22px] pb-[26px]">
+        {v.supplementReminderDue && (
+          <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-gold-dim mb-1.5">
+            Evening reminder — {v.supplements.filter((s) => !s.done).length} not logged yet today
+          </div>
+        )}
         <div className="flex items-baseline justify-between">
           <span className="font-serif font-semibold text-[18px]">Supplements</span>
           <span className="font-mono text-[10px] text-dim">

@@ -15,6 +15,9 @@ import MoreTab from "./tabs/MoreTab";
 import { flushPendingSave, useStore } from "@/lib/store/useStore";
 import { mastheadFor } from "@/lib/view/masthead";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { today } from "@/lib/domain/selectors";
+import { supplementsView } from "@/lib/view/supplements";
+import { maybeShowSupplementReminder } from "@/lib/notify";
 import DesktopShell from "./DesktopShell";
 
 export default function Shell() {
@@ -40,6 +43,23 @@ export default function Shell() {
     }, 1000);
     return () => clearInterval(id);
   }, [tickRest]);
+
+  // Nudge with a browser notification once per evening if supplements are
+  // still unlogged. Checked on an interval (rather than a server push) since
+  // this only needs to fire while the PWA is open somewhere.
+  useEffect(() => {
+    if (!hydrated) return;
+    function check() {
+      const dateStr = today();
+      const unlogged = supplementsView(db, dateStr)
+        .filter((s) => !s.done)
+        .map((s) => s.name);
+      maybeShowSupplementReminder(dateStr, unlogged);
+    }
+    check();
+    const id = setInterval(check, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [hydrated, db]);
 
   // Keep phone and desktop in sync: flush unsaved edits before the tab is
   // hidden/closed, and pull the latest server copy when it's shown again.

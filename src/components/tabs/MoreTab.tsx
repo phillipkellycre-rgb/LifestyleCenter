@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { DOW_SHORT } from "@/lib/data";
 import { computeTargets } from "@/lib/domain/calc";
 import { phaseFor } from "@/lib/domain/program";
@@ -9,6 +9,13 @@ import { currentWeek, isBeforeStart, today } from "@/lib/domain/selectors";
 import { fmt, formatIsoDate } from "@/lib/domain/util";
 import { useStore } from "@/lib/store/useStore";
 import { COACH_PROMPTS, insightsView } from "@/lib/view/more";
+import {
+  disableSupplementReminders,
+  enableSupplementReminders,
+  isSupplementReminderEnabled,
+  notificationPermission,
+  type ReminderPermission,
+} from "@/lib/notify";
 import type { ActivityLevel, Goal, Phase, Sex } from "@/lib/domain/types";
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon..Sun, as JS Date.getDay() values
@@ -64,6 +71,24 @@ export default function MoreTab() {
   const setProgramStartDate = useStore((s) => s.setProgramStartDate);
   const rebuildProgram = useStore((s) => s.rebuildProgram);
   const resetAll = useStore((s) => s.resetAll);
+
+  // MoreTab only ever mounts client-side (Shell withholds the whole tab tree
+  // until the store has hydrated), so reading these browser-only APIs as the
+  // initial state is safe — there is no server-rendered version to mismatch.
+  const [reminderEnabled, setReminderEnabled] = useState(() => isSupplementReminderEnabled());
+  const [notifStatus, setNotifStatus] = useState<ReminderPermission>(() => notificationPermission());
+  const remindersOn = reminderEnabled && notifStatus === "granted";
+
+  async function handleToggleReminders() {
+    if (remindersOn) {
+      disableSupplementReminders();
+      setReminderEnabled(false);
+      return;
+    }
+    const granted = await enableSupplementReminders();
+    setReminderEnabled(granted);
+    setNotifStatus(notificationPermission());
+  }
 
   const t = computeTargets(db.profile);
   const insights = insightsView(db);
@@ -355,6 +380,35 @@ export default function MoreTab() {
           ))}
         </div>
         <div className="font-mono text-[10px] text-dim mt-2.5 leading-[1.6]">{engineLine}</div>
+
+        <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-hairline">
+          <div className="min-w-0">
+            <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-dim">
+              Evening Supplement Reminders
+            </div>
+            <div className="font-mono text-[10px] text-dim mt-1 leading-[1.5]">
+              {notifStatus === "unsupported"
+                ? "Not supported in this browser."
+                : notifStatus === "denied"
+                ? "Blocked — allow notifications for this site in your browser settings."
+                : remindersOn
+                ? "On — a notification fires after 6pm if any are still unlogged."
+                : "Off — turn on to get a nudge after 6pm."}
+            </div>
+          </div>
+          <button
+            onClick={handleToggleReminders}
+            disabled={notifStatus === "unsupported" || notifStatus === "denied"}
+            className="shrink-0 px-4 py-2.5 rounded-[10px] border font-mono text-[10.5px] tracking-[0.06em] uppercase cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: remindersOn ? "var(--navy)" : "#fff",
+              color: remindersOn ? "var(--gold)" : "var(--navy-3)",
+              borderColor: remindersOn ? "var(--navy)" : "var(--hairline)",
+            }}
+          >
+            {remindersOn ? "On" : "Off"}
+          </button>
+        </div>
 
         <div className="flex gap-2 mt-4 flex-wrap">
           <button

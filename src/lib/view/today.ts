@@ -46,7 +46,10 @@ export interface TodayVM {
   groceryCount: number;
   groceryPreview: string[];
   supplements: SupplementRowVM[];
+  supplementReminderDue: boolean;
 }
+
+const EVENING_HOUR = 18;
 
 export const WATER_STEPS = [8, 12, 16, 24];
 
@@ -124,6 +127,9 @@ export function todayView(db: Db): TodayVM {
   const groceryItems = groceryView(db).flatMap((g) => g.items);
   const groceryUnchecked = groceryItems.filter((i) => !i.checked);
 
+  const supplements = supplementsView(db, dateStr);
+  const supplementReminderDue = new Date().getHours() >= EVENING_HOUR && supplements.some((s) => !s.done);
+
   return {
     workoutTag,
     fuelTag: `${fmt(tot.cal)} / ${fmt(t.kcal)} KCAL`,
@@ -138,6 +144,7 @@ export function todayView(db: Db): TodayVM {
     isShoppingDay: new Date().getDay() === 0,
     groceryCount: groceryItems.length,
     groceryPreview: groceryUnchecked.slice(0, 3).map((i) => i.name),
-    supplements: supplementsView(db, dateStr),
+    supplements,
+    supplementReminderDue,
   };
 }
