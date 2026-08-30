@@ -198,6 +198,17 @@ export interface ChatMessage {
   text: string;
 }
 
+export interface WellnessEntry {
+  date: string;
+  /** 1 (low) – 10 (high). */
+  mood: number;
+  /** 1 (calm) – 10 (very stressed). */
+  stress: number;
+  /** 1 (calm) – 10 (very anxious). */
+  anxiety: number;
+  note: string;
+}
+
 export interface GroceryCustomItem {
   key: string;
   name: string;
@@ -223,6 +234,8 @@ export interface Db {
   cardio: CardioSession[];
   bloodPressure: BloodPressureReading[];
   recovery: Record<string, RecoveryLog>;
+  /** One check-in per date — mood/stress/anxiety, upserted on save. */
+  wellness: WellnessEntry[];
   chat: ChatMessage[];
   selWeek: number;
   completedToday: number[];

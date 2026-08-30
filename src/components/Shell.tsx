@@ -10,6 +10,7 @@ import TodayTab from "./tabs/TodayTab";
 import TrainTab from "./tabs/TrainTab";
 import FuelTab from "./tabs/FuelTab";
 import ProgressTab from "./tabs/ProgressTab";
+import WellnessTab from "./tabs/WellnessTab";
 import MoreTab from "./tabs/MoreTab";
 import { flushPendingSave, useStore } from "@/lib/store/useStore";
 import { mastheadFor } from "@/lib/view/masthead";
@@ -77,6 +78,7 @@ export default function Shell() {
           {tab === "train" && <TrainTab />}
           {tab === "fuel" && <FuelTab />}
           {tab === "progress" && <ProgressTab />}
+          {tab === "wellness" && <WellnessTab />}
           {tab === "more" && <MoreTab />}
         </div>
 

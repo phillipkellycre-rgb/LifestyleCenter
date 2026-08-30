@@ -123,6 +123,9 @@ interface StoreState {
   setBpField: (field: keyof BpDraft, v: string) => void;
   saveBp: () => void;
 
+  setWellnessField: (field: "mood" | "stress" | "anxiety" | "note", value: number | string) => void;
+  removeWellnessEntry: (date: string) => void;
+
   setChatDraft: (v: string) => void;
   sendChat: () => void;
   askCoachPrompt: (q: string) => void;
@@ -632,6 +635,25 @@ export const useStore = create<StoreState>((set, get) => ({
     });
     set({ bpDraft: defaultBpDraft(), bpError: "" });
     get().flash(`${systolic}/${diastolic} logged`);
+  },
+
+  setWellnessField: (field, value) => {
+    const date = today();
+    get().edit((db) => {
+      db.wellness = db.wellness || [];
+      let e = db.wellness.find((w) => w.date === date);
+      if (!e) {
+        e = { date, mood: 5, stress: 5, anxiety: 5, note: "" };
+        db.wellness.push(e);
+      }
+      if (field === "note") e.note = value as string;
+      else e[field] = value as number;
+    });
+  },
+  removeWellnessEntry: (date) => {
+    get().edit((db) => {
+      db.wellness = (db.wellness || []).filter((w) => w.date !== date);
+    });
   },
 
   setChatDraft: (chatDraft) => set({ chatDraft }),

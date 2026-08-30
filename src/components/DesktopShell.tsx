@@ -9,6 +9,7 @@ import TodayTab from "./tabs/TodayTab";
 import TrainTab from "./tabs/TrainTab";
 import FuelTab from "./tabs/FuelTab";
 import DesktopProgress from "./desktop/DesktopProgress";
+import WellnessTab from "./tabs/WellnessTab";
 import MoreTab from "./tabs/MoreTab";
 import { useStore } from "@/lib/store/useStore";
 import { mastheadFor } from "@/lib/view/masthead";
@@ -38,6 +39,7 @@ export default function DesktopShell() {
               {tab === "today" && <TodayTab />}
               {tab === "train" && <TrainTab />}
               {tab === "fuel" && <FuelTab />}
+              {tab === "wellness" && <WellnessTab />}
               {tab === "more" && <MoreTab />}
             </div>
           )}

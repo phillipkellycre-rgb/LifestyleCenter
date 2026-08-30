@@ -96,5 +96,6 @@ export const TAB_ICONS: Record<string, string> = {
   train: "M6 7v10M18 7v10M2 10v4M22 10v4M6 12h12",
   fuel: "M18 2v6a2 2 0 01-2 2h-1v10M8 2v6a2 2 0 002 2h1M11 2v18",
   progress: "M4 20V10M12 20V4M20 20v-7",
+  wellness: "M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z",
   more: "M5 12h.01M12 12h.01M19 12h.01",
 };

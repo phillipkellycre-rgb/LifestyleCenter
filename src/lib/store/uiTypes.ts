@@ -1,6 +1,6 @@
 import type { FoodItem, MealSlot, Recipe, SessionFeedback } from "@/lib/domain/types";
 
-export type TabId = "today" | "train" | "fuel" | "progress" | "more";
+export type TabId = "today" | "train" | "fuel" | "progress" | "wellness" | "more";
 
 export interface WorkoutSessionRow {
   w: number;

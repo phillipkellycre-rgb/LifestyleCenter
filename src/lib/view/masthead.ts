@@ -3,6 +3,7 @@ import { phaseFor } from "@/lib/domain/program";
 import { adherence, currentWeek, dayTotals, today, todayPlan, weeklyVolumes } from "@/lib/domain/selectors";
 import { clamp, fmt } from "@/lib/domain/util";
 import { DAYS } from "@/lib/data";
+import { wellnessScore } from "@/lib/view/wellness";
 import type { Db } from "@/lib/domain/types";
 import type { MastheadProps } from "@/components/Masthead";
 import type { TabId } from "@/lib/store/uiTypes";
@@ -76,6 +77,25 @@ export function mastheadFor(tab: TabId, db: Db): MastheadProps {
         { v: (w1.lb - w0.lb).toFixed(1), l: "Lb Change" },
         { v: `${a.sessions}/${a.planned}`, l: "Sessions" },
         { v: `${a.score}`, l: "Week Score" },
+      ],
+    };
+  }
+  if (tab === "wellness") {
+    const entries = db.wellness || [];
+    const todayEntry = entries.find((e) => e.date === dateStr);
+    const last = entries[entries.length - 1];
+    const score = todayEntry ? wellnessScore(todayEntry) : last ? wellnessScore(last) : 0;
+    return {
+      eyebrow: `Entry No. ${dayNo} · ${entries.length} check-ins logged`,
+      title: "Wellness",
+      sub: todayEntry ? `Today's mood ${todayEntry.mood}/10 · stress ${todayEntry.stress}/10` : "No check-in logged yet today",
+      ringVal: `${score}`,
+      ringLabel: "SCORE",
+      ringPct: ringOf(score / 100),
+      stats: [
+        { v: todayEntry ? `${todayEntry.mood}` : "–", l: "Mood Today" },
+        { v: todayEntry ? `${todayEntry.stress}` : "–", l: "Stress Today" },
+        { v: `${entries.length}`, l: "Check-ins" },
       ],
     };
   }
