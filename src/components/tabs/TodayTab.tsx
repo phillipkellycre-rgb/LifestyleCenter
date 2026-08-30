@@ -99,7 +99,10 @@ export default function TodayTab() {
         ))}
       </section>
 
-      <section className="px-[22px] pt-[22px]">
+      {/* Water + Coach's Note share one section so the desktop grid places
+          them together in a single narrow column instead of Note wrapping
+          alone to a new row. */}
+      <section className="px-[22px] pt-[22px] pb-[26px]">
         <div className="flex items-baseline justify-between">
           <span className="font-serif font-semibold text-[18px]">Water</span>
           <span className="font-mono text-[10px] text-dim">{v.waterLine}</span>
@@ -119,10 +122,10 @@ export default function TodayTab() {
             </button>
           ))}
         </div>
-      </section>
 
-      <section className="px-[22px] pt-[22px] pb-[26px]">
-        <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-gold-dim">Coach&apos;s Note</div>
+        <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-gold-dim mt-[22px]">
+          Coach&apos;s Note
+        </div>
         <div
           className="relative mt-1.5 rounded-[4px] p-4"
           style={{ background: "var(--note-bg)", border: "1px solid var(--note-border)" }}

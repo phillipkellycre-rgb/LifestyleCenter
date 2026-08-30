@@ -1,6 +1,6 @@
 "use client";
 
-import Masthead from "./Masthead";
+import DesktopHeader from "./DesktopHeader";
 import Sidebar from "./Sidebar";
 import Toast from "./Toast";
 import WorkoutMode from "./overlays/WorkoutMode";
@@ -8,7 +8,7 @@ import BottomSheet from "./overlays/BottomSheet";
 import TodayTab from "./tabs/TodayTab";
 import TrainTab from "./tabs/TrainTab";
 import FuelTab from "./tabs/FuelTab";
-import ProgressTab from "./tabs/ProgressTab";
+import DesktopProgress from "./desktop/DesktopProgress";
 import MoreTab from "./tabs/MoreTab";
 import { useStore } from "@/lib/store/useStore";
 import { mastheadFor } from "@/lib/view/masthead";
@@ -24,22 +24,23 @@ export default function DesktopShell() {
   const masthead = mastheadFor(tab, db);
 
   return (
-    <div className="relative flex min-h-dvh" style={{ background: "var(--page-desk)" }}>
+    <div className="desktop-theme relative flex min-h-dvh" style={{ background: "#f7f8fa" }}>
       <Sidebar active={tab} onChange={setTab} />
 
       <main className="flex-1 min-w-0 overflow-y-auto lb-scroll">
-        <div className="max-w-[1180px] mx-auto p-8">
-          <div className="rounded-[18px] overflow-hidden">
-            <Masthead {...masthead} />
-          </div>
+        <div className="max-w-[1208px] mx-auto px-12 py-10">
+          <DesktopHeader {...masthead} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start mt-6">
-            {tab === "today" && <TodayTab />}
-            {tab === "train" && <TrainTab />}
-            {tab === "fuel" && <FuelTab />}
-            {tab === "progress" && <ProgressTab />}
-            {tab === "more" && <MoreTab />}
-          </div>
+          {tab === "progress" ? (
+            <DesktopProgress />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+              {tab === "today" && <TodayTab />}
+              {tab === "train" && <TrainTab />}
+              {tab === "fuel" && <FuelTab />}
+              {tab === "more" && <MoreTab />}
+            </div>
+          )}
         </div>
       </main>
 
