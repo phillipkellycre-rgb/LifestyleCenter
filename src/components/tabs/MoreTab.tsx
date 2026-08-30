@@ -85,7 +85,10 @@ export default function MoreTab() {
 
   return (
     <>
-      <section className="px-[22px] pt-5 pb-[26px]">
+      {/* Spans the full grid width on desktop/iPad — pairing this
+          (shorter, chat-driven) card with the much taller "How your
+          program works" card left a large empty gap beneath it. */}
+      <section className="px-[22px] pt-5 pb-[26px] md:col-span-2 xl:col-span-3">
         <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Coach</div>
         {insights.map((i, idx) => (
           <div key={idx} className="py-[11px] border-b border-dashed border-hairline">
