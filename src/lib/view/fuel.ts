@@ -85,6 +85,7 @@ export interface GroceryGroupVM {
 }
 
 export function groceryView(db: Db): GroceryGroupVM[] {
+  const removed = db.groceryRemoved || {};
   const bag: Record<string, { name: string; aisle: string; n: number; qty: string }> = {};
   db.mealPlan.forEach((d) =>
     d.meals.forEach((m) =>
@@ -100,10 +101,10 @@ export function groceryView(db: Db): GroceryGroupVM[] {
       })
     )
   );
-  return AISLE_ORDER.map((aisle) => ({
+  const groups = AISLE_ORDER.map((aisle) => ({
     name: aisle,
     items: Object.keys(bag)
-      .filter((k) => bag[k].aisle === aisle)
+      .filter((k) => bag[k].aisle === aisle && !removed[k])
       .sort()
       .map((k) => ({
         key: k,
@@ -112,4 +113,18 @@ export function groceryView(db: Db): GroceryGroupVM[] {
         checked: !!(db.grocery || {})[k],
       })),
   })).filter((g) => g.items.length);
+
+  const custom = (db.groceryCustom || []).filter((c) => !removed[c.key]);
+  if (custom.length) {
+    groups.push({
+      name: "Added by you",
+      items: custom.map((c) => ({
+        key: c.key,
+        name: c.name,
+        qty: c.qty,
+        checked: !!(db.grocery || {})[c.key],
+      })),
+    });
+  }
+  return groups;
 }

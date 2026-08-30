@@ -35,6 +35,7 @@ interface StoreState {
   exGroup: string;
   foodQuery: string;
   planView: "plan" | "grocery";
+  groceryDraft: { name: string; qty: string };
 
   sheet: SheetState | null;
   sheetQty: number;
@@ -92,6 +93,9 @@ interface StoreState {
   toggleExerciseDone: (exId: number) => void;
 
   toggleGrocery: (itemName: string) => void;
+  setGroceryDraftField: (field: "name" | "qty", value: string) => void;
+  addGroceryItem: () => void;
+  removeGroceryItem: (key: string) => void;
   swapMeal: (dayIndex: number, mealIndex: number) => void;
 
   startSession: (dayIndex: number) => void;
@@ -161,6 +165,7 @@ export const useStore = create<StoreState>((set, get) => ({
   exGroup: "All",
   foodQuery: "",
   planView: "plan",
+  groceryDraft: { name: "", qty: "" },
 
   sheet: null,
   sheetQty: 1,
@@ -346,6 +351,28 @@ export const useStore = create<StoreState>((set, get) => ({
       db.grocery = db.grocery || {};
       if (db.grocery[itemName]) delete db.grocery[itemName];
       else db.grocery[itemName] = 1;
+    });
+  },
+
+  setGroceryDraftField: (field, value) => set((s) => ({ groceryDraft: { ...s.groceryDraft, [field]: value } })),
+  addGroceryItem: () => {
+    const d = get().groceryDraft;
+    const name = d.name.trim();
+    if (!name) return;
+    const key = `custom:${name.toLowerCase()}:${Date.now()}`;
+    get().edit((db) => {
+      db.groceryCustom = db.groceryCustom || [];
+      db.groceryCustom.push({ key, name, qty: d.qty.trim() || "1" });
+    });
+    set({ groceryDraft: { name: "", qty: "" } });
+    get().flash(name + " added to the list");
+  },
+  removeGroceryItem: (key) => {
+    get().edit((db) => {
+      db.groceryCustom = (db.groceryCustom || []).filter((c) => c.key !== key);
+      db.groceryRemoved = db.groceryRemoved || {};
+      db.groceryRemoved[key] = true;
+      if (db.grocery) delete db.grocery[key];
     });
   },
 

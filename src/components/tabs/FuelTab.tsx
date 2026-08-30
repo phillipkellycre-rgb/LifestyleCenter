@@ -19,6 +19,10 @@ export default function FuelTab() {
   const swapMeal = useStore((s) => s.swapMeal);
   const toggleGrocery = useStore((s) => s.toggleGrocery);
   const setSheetSlot = useStore((s) => s.setSheetSlot);
+  const groceryDraft = useStore((s) => s.groceryDraft);
+  const setGroceryDraftField = useStore((s) => s.setGroceryDraftField);
+  const addGroceryItem = useStore((s) => s.addGroceryItem);
+  const removeGroceryItem = useStore((s) => s.removeGroceryItem);
 
   const dateStr = today();
   const fq = foodQuery.trim().toLowerCase();
@@ -145,6 +149,37 @@ export default function FuelTab() {
           </button>
         </div>
         <div className="h-px bg-hairline mt-2 mb-1" />
+        {!showPlan && (
+          <div className="flex gap-2 mt-3">
+            <input
+              className="lb-input flex-[2]"
+              value={groceryDraft.name}
+              onChange={(e) => setGroceryDraftField("name", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addGroceryItem();
+              }}
+              placeholder="Add an item…"
+              aria-label="New grocery item name"
+            />
+            <input
+              className="lb-input flex-1"
+              value={groceryDraft.qty}
+              onChange={(e) => setGroceryDraftField("qty", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addGroceryItem();
+              }}
+              placeholder="Qty"
+              aria-label="New grocery item quantity"
+            />
+            <button
+              onClick={addGroceryItem}
+              aria-label="Add grocery item"
+              className="shrink-0 px-4 bg-navy text-gold border-0 rounded-[10px] font-mono text-[11px] uppercase cursor-pointer"
+            >
+              Add
+            </button>
+          </div>
+        )}
         {showPlan &&
           plan.map((p) => (
             <div key={p.dayIndex} className="py-2.5 border-b border-dashed border-hairline">
@@ -189,26 +224,37 @@ export default function FuelTab() {
             <div key={g.name} className="mt-3">
               <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-gold-dim">{g.name}</div>
               {g.items.map((i) => (
-                <button
+                <div
                   key={i.key}
-                  onClick={() => toggleGrocery(i.key)}
-                  className="flex items-center gap-2.5 w-full text-left bg-transparent border-0 border-b border-dashed border-hairline py-2.5 cursor-pointer"
+                  className="flex items-center gap-2.5 py-2.5 border-b border-dashed border-hairline"
                   style={{ opacity: i.checked ? 0.45 : 1 }}
                 >
-                  <span
-                    className="w-[18px] h-[18px] min-w-[18px] rounded-[5px] border-[1.5px] font-mono text-[11px] flex items-center justify-center text-gold-dim"
-                    style={{ borderColor: i.checked ? "var(--gold)" : "rgba(14,42,76,0.2)" }}
+                  <button
+                    onClick={() => toggleGrocery(i.key)}
+                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left bg-transparent border-0 p-0 cursor-pointer"
                   >
-                    {i.checked ? "✓" : ""}
-                  </span>
-                  <span
-                    className="flex-1 text-[13.5px] text-ink"
-                    style={{ textDecoration: i.checked ? "line-through" : "none" }}
+                    <span
+                      className="w-[18px] h-[18px] min-w-[18px] rounded-[5px] border-[1.5px] font-mono text-[11px] flex items-center justify-center text-gold-dim"
+                      style={{ borderColor: i.checked ? "var(--gold)" : "rgba(14,42,76,0.2)" }}
+                    >
+                      {i.checked ? "✓" : ""}
+                    </span>
+                    <span
+                      className="flex-1 min-w-0 text-[13.5px] text-ink truncate"
+                      style={{ textDecoration: i.checked ? "line-through" : "none" }}
+                    >
+                      {i.name}
+                    </span>
+                    <span className="font-mono text-[10px] text-dim shrink-0">{i.qty}</span>
+                  </button>
+                  <button
+                    onClick={() => removeGroceryItem(i.key)}
+                    aria-label={`Remove ${i.name}`}
+                    className="w-[26px] h-[26px] shrink-0 border-0 bg-transparent text-dim cursor-pointer text-[13px]"
                   >
-                    {i.name}
-                  </span>
-                  <span className="font-mono text-[10px] text-dim">{i.qty}</span>
-                </button>
+                    ✕
+                  </button>
+                </div>
               ))}
             </div>
           ))}

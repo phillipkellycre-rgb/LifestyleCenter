@@ -198,6 +198,12 @@ export interface ChatMessage {
   text: string;
 }
 
+export interface GroceryCustomItem {
+  key: string;
+  name: string;
+  qty: string;
+}
+
 export interface Db {
   profile: Profile;
   program: Program;
@@ -210,6 +216,10 @@ export interface Db {
   water: Record<string, number>;
   mealPlan: MealPlan;
   grocery: Record<string, number>;
+  /** Extra items the user typed in themselves, alongside the plan-derived list. */
+  groceryCustom: GroceryCustomItem[];
+  /** Keys (plan-derived ingredient names or groceryCustom keys) removed from the list. */
+  groceryRemoved: Record<string, boolean>;
   cardio: CardioSession[];
   bloodPressure: BloodPressureReading[];
   recovery: Record<string, RecoveryLog>;

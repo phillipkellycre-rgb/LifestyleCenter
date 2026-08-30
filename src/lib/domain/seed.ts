@@ -50,6 +50,8 @@ export function emptyState(): Db {
     water: {},
     mealPlan: buildMealPlan(targets),
     grocery: {},
+    groceryCustom: [],
+    groceryRemoved: {},
     cardio: [],
     bloodPressure: [],
     recovery: {},
