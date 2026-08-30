@@ -4,6 +4,7 @@ import { phaseFor } from "@/lib/domain/program";
 import { progression } from "@/lib/domain/progression";
 import { adherence, currentWeek, dayTotals, exerciseName, isBeforeStart, isRestDay, today, todayPlan } from "@/lib/domain/selectors";
 import { fmt, formatIsoDate } from "@/lib/domain/util";
+import { groceryView } from "@/lib/view/fuel";
 import type { Db, MealSlot } from "@/lib/domain/types";
 
 export interface TodayExerciseVM {
@@ -40,6 +41,9 @@ export interface TodayVM {
   waterLine: string;
   waterPct: number;
   coachNote: string;
+  isShoppingDay: boolean;
+  groceryCount: number;
+  groceryPreview: string[];
 }
 
 export const WATER_STEPS = [8, 12, 16, 24];
@@ -115,6 +119,9 @@ export function todayView(db: Db): TodayVM {
     ? "Rest day — start anyway"
     : "Start workout";
 
+  const groceryItems = groceryView(db).flatMap((g) => g.items);
+  const groceryUnchecked = groceryItems.filter((i) => !i.checked);
+
   return {
     workoutTag,
     fuelTag: `${fmt(tot.cal)} / ${fmt(t.kcal)} KCAL`,
@@ -126,5 +133,8 @@ export function todayView(db: Db): TodayVM {
     waterLine: `${water} / 100 OZ`,
     waterPct: Math.min(1, water / 100),
     coachNote: `“${noteBits.join(" ")}”`,
+    isShoppingDay: new Date().getDay() === 0,
+    groceryCount: groceryItems.length,
+    groceryPreview: groceryUnchecked.slice(0, 3).map((i) => i.name),
   };
 }

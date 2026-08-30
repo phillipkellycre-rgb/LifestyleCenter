@@ -81,35 +81,6 @@ export default function TrainTab() {
       </section>
 
       <section className="px-[22px] pt-[22px]">
-        <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Planned vs actual</div>
-        {v.liftCharts.map((c) => (
-          <div key={c.name} className="bg-card-bg border border-hairline rounded-[14px] p-3.5 mt-3">
-            <div className="flex justify-between items-baseline">
-              <div className="font-serif font-semibold text-[15px]">{c.name}</div>
-              <div className="font-mono text-[10.5px] text-gold-dim">{c.delta}</div>
-            </div>
-            <svg viewBox="0 0 300 60" preserveAspectRatio="none" className="w-full h-[60px] mt-2 block">
-              <polyline points={c.planned} fill="none" stroke="#A9BBCF" strokeWidth={1.5} strokeDasharray="4 4" />
-              <polyline points={c.actual} fill="none" stroke="#1F4A7D" strokeWidth={2.5} />
-            </svg>
-            <div className="font-mono text-[9.5px] text-dim">{c.caption}</div>
-          </div>
-        ))}
-        <div className="bg-card-bg border border-hairline rounded-[14px] p-3.5 mt-3">
-          <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Weekly volume</div>
-          <div className="flex items-end gap-2 h-[90px] mt-3">
-            {v.volumeBars.map((b, i) => (
-              <div key={i} className="flex-1 h-full flex flex-col justify-end items-center gap-1.5">
-                <div className="w-full rounded-t-[4px] rounded-b-[2px]" style={{ height: b.h, background: b.bg }} />
-                <div className="font-mono text-[9px] text-dim">{b.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="font-mono text-[9.5px] text-dim mt-2">{v.volumeCaption}</div>
-        </div>
-      </section>
-
-      <section className="px-[22px] pt-[22px] pb-[26px]">
         <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Exercise library</div>
         <input
           className="lb-input mt-2.5"
@@ -150,6 +121,38 @@ export default function TrainTab() {
         ))}
         <div className="font-mono text-[10px] text-dim mt-2.5">
           {filtered.length} of {EXERCISES.length} exercises
+        </div>
+      </section>
+
+      {/* Ordered after the (much taller) Exercise Library, not before it —
+          this card is short, and pairing it with two very tall neighbors
+          in the same grid row left a large empty gap beneath it. */}
+      <section className="px-[22px] pt-[22px] pb-[26px]">
+        <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Planned vs actual</div>
+        {v.liftCharts.map((c) => (
+          <div key={c.name} className="bg-card-bg border border-hairline rounded-[14px] p-3.5 mt-3">
+            <div className="flex justify-between items-baseline">
+              <div className="font-serif font-semibold text-[15px]">{c.name}</div>
+              <div className="font-mono text-[10.5px] text-gold-dim">{c.delta}</div>
+            </div>
+            <svg viewBox="0 0 300 60" preserveAspectRatio="none" className="w-full h-[60px] mt-2 block">
+              <polyline points={c.planned} fill="none" stroke="#A9BBCF" strokeWidth={1.5} strokeDasharray="4 4" />
+              <polyline points={c.actual} fill="none" stroke="#1F4A7D" strokeWidth={2.5} />
+            </svg>
+            <div className="font-mono text-[9.5px] text-dim">{c.caption}</div>
+          </div>
+        ))}
+        <div className="bg-card-bg border border-hairline rounded-[14px] p-3.5 mt-3">
+          <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Weekly volume</div>
+          <div className="flex items-end gap-2 h-[90px] mt-3">
+            {v.volumeBars.map((b, i) => (
+              <div key={i} className="flex-1 h-full flex flex-col justify-end items-center gap-1.5">
+                <div className="w-full rounded-t-[4px] rounded-b-[2px]" style={{ height: b.h, background: b.bg }} />
+                <div className="font-mono text-[9px] text-dim">{b.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="font-mono text-[9.5px] text-dim mt-2">{v.volumeCaption}</div>
         </div>
       </section>
     </>

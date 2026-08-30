@@ -42,7 +42,10 @@ export default function FuelTab() {
 
   return (
     <>
-      <section className="px-[22px] pt-[18px]">
+      {/* Spans the full grid width on desktop/iPad so its short height
+          (when there's no active search) doesn't leave a gap under it
+          while the much taller Diary card fills the row beside it. */}
+      <section className="px-[22px] pt-[18px] md:col-span-2 xl:col-span-3">
         <div className="flex items-center gap-2.5 bg-card-bg border border-hairline rounded-xl py-2.5 px-3.5">
           <svg viewBox="0 0 24 24" fill="none" stroke="#6B7C93" strokeWidth={2} className="w-4 h-4 shrink-0">
             <circle cx="11" cy="11" r="7" />

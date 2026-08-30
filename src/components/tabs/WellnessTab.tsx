@@ -20,18 +20,31 @@ export default function WellnessTab() {
 
   return (
     <>
-      <section className="px-[22px] pt-5">
-        <div className="bg-card-bg border border-hairline rounded-[14px] p-4">
-          <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">This week</div>
-          <div className="flex items-end gap-2 h-[100px] mt-3">
-            {v.weekBars.map((b, i) => (
-              <div key={i} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
-                <div className="w-full rounded-t-[4px] rounded-b-[2px]" style={{ height: b.h, background: b.bg }} />
-                <div className="font-mono text-[9px] text-dim">{b.d}</div>
-              </div>
-            ))}
+      {/* This Week + Outlook are both short — bundled into one full-width
+          banner (each its own inner card) instead of each being a grid
+          item, which left them sharing a row with much taller cards and a
+          large empty gap beneath. */}
+      <section className="px-[22px] pt-5 md:col-span-2 xl:col-span-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-card-bg border border-hairline rounded-[14px] p-4">
+            <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">This week</div>
+            <div className="flex items-end gap-2 h-[100px] mt-3">
+              {v.weekBars.map((b, i) => (
+                <div key={i} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
+                  <div className="w-full rounded-t-[4px] rounded-b-[2px]" style={{ height: b.h, background: b.bg }} />
+                  <div className="font-mono text-[9px] text-dim">{b.d}</div>
+                </div>
+              ))}
+            </div>
+            <div className="font-mono text-[9.5px] text-dim mt-2">{v.weekLine}</div>
           </div>
-          <div className="font-mono text-[9.5px] text-dim mt-2">{v.weekLine}</div>
+          <div className="bg-card-bg border border-hairline rounded-[14px] p-4">
+            <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Outlook</div>
+            <div className="text-[14px] font-semibold mt-2" style={{ color: v.outlook.color }}>
+              {v.outlook.available ? v.outlook.label : "Not enough data yet"}
+            </div>
+            <div className="font-mono text-[10px] text-dim mt-1.5 leading-[1.5]">{v.outlook.message}</div>
+          </div>
         </div>
       </section>
 
@@ -111,16 +124,6 @@ export default function WellnessTab() {
               Log your first check-in above to start the trend.
             </div>
           )}
-        </div>
-      </section>
-
-      <section className="px-[22px] pt-[22px]">
-        <div className="bg-card-bg border border-hairline rounded-[14px] p-4">
-          <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">Outlook</div>
-          <div className="text-[14px] font-semibold mt-2" style={{ color: v.outlook.color }}>
-            {v.outlook.available ? v.outlook.label : "Not enough data yet"}
-          </div>
-          <div className="font-mono text-[10px] text-dim mt-1.5 leading-[1.5]">{v.outlook.message}</div>
         </div>
       </section>
 

@@ -11,9 +11,9 @@ export default function TodayTab() {
   const setTab = useStore((s) => s.setTab);
   const addWater = useStore((s) => s.addWater);
   const setPlanView = useStore((s) => s.setPlanView);
+  const openGroceryPicker = useStore((s) => s.openGroceryPicker);
 
   const v = todayView(db);
-  const isShoppingDay = new Date().getDay() === 0;
 
   function goToGroceryList() {
     setPlanView("grocery");
@@ -22,25 +22,53 @@ export default function TodayTab() {
 
   return (
     <>
-      {isShoppingDay && (
-        <section className="px-[22px] pt-5">
-          <div
-            className="rounded-[14px] p-4"
-            style={{ background: "var(--note-bg)", border: "1px solid var(--note-border)" }}
-          >
-            <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-gold-dim">Sunday reminder</div>
-            <div className="text-[14px] font-semibold mt-1" style={{ color: "var(--note-ink)" }}>
-              Time to shop for the week
+      {/* Spans the full grid width on desktop/iPad — as a 4th card sharing a
+          row with the (much taller) Training Manifest, its short height was
+          leaving a large empty gap in that row. */}
+      <section className="px-[22px] pt-5 md:col-span-2 xl:col-span-3">
+        <div
+          className="rounded-[14px] p-4"
+          style={
+            v.isShoppingDay
+              ? { background: "var(--note-bg)", border: "1px solid var(--note-border)" }
+              : { background: "var(--card-bg)", border: "1px solid var(--hairline)" }
+          }
+        >
+          {v.isShoppingDay && (
+            <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-gold-dim mb-1.5">
+              Sunday reminder — time to shop for the week
             </div>
-            <button
-              onClick={goToGroceryList}
-              className="w-full mt-3 py-2.5 rounded-[10px] bg-navy text-gold border-0 font-mono text-[11px] tracking-[0.06em] uppercase cursor-pointer"
-            >
-              Grocery list →
-            </button>
+          )}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="min-w-0">
+              <div className="font-serif font-semibold text-[16px]">Grocery List</div>
+              <div className="font-mono text-[10.5px] text-dim mt-0.5 truncate">
+                {v.groceryCount > 0
+                  ? `${v.groceryCount} item${v.groceryCount === 1 ? "" : "s"}${
+                      v.groceryPreview.length
+                        ? " — " + v.groceryPreview.join(", ") + (v.groceryCount > v.groceryPreview.length ? "…" : "")
+                        : ""
+                    }`
+                  : "Nothing on your list yet — add items for your next trip"}
+              </div>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={openGroceryPicker}
+                className="py-2.5 px-3.5 rounded-[10px] bg-navy text-gold border-0 font-mono text-[10.5px] tracking-[0.06em] uppercase cursor-pointer"
+              >
+                + Add items
+              </button>
+              <button
+                onClick={goToGroceryList}
+                className="py-2.5 px-3.5 rounded-[10px] border border-hairline bg-transparent font-mono text-[10.5px] tracking-[0.06em] uppercase text-gold-dim cursor-pointer"
+              >
+                View list →
+              </button>
+            </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       <section className="px-[22px] pt-[22px]">
         <div className="flex items-baseline justify-between">
