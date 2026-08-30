@@ -23,6 +23,7 @@ export default function FuelTab() {
   const setGroceryDraftField = useStore((s) => s.setGroceryDraftField);
   const addGroceryItem = useStore((s) => s.addGroceryItem);
   const removeGroceryItem = useStore((s) => s.removeGroceryItem);
+  const openGroceryPicker = useStore((s) => s.openGroceryPicker);
 
   const dateStr = today();
   const fq = foodQuery.trim().toLowerCase();
@@ -179,6 +180,14 @@ export default function FuelTab() {
               Add
             </button>
           </div>
+        )}
+        {!showPlan && (
+          <button
+            onClick={openGroceryPicker}
+            className="w-full mt-2 py-2.5 border border-hairline bg-card-bg rounded-[10px] font-mono text-[10.5px] tracking-[0.06em] uppercase text-gold-dim cursor-pointer"
+          >
+            + Bundle items for this run
+          </button>
         )}
         {showPlan &&
           plan.map((p) => (

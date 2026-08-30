@@ -1,5 +1,6 @@
 "use client";
 
+import { WEEKDAY_LETTERS } from "@/lib/data";
 import { today } from "@/lib/domain/selectors";
 import { useStore } from "@/lib/store/useStore";
 import { CARDIO_TYPES, progressView } from "@/lib/view/progress";
@@ -290,6 +291,11 @@ export default function ProgressTab() {
             </button>
           </div>
           <div className="grid grid-cols-7 gap-1 mt-2.5">
+            {WEEKDAY_LETTERS.map((w, i) => (
+              <div key={i} className="font-mono text-[9px] text-dim text-center pb-1">
+                {w}
+              </div>
+            ))}
             {v.calendar.map((c, i) => (
               <div
                 key={i}

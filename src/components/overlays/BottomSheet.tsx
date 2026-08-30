@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SLOTS } from "@/lib/data";
 import { today } from "@/lib/domain/selectors";
 import { useStore } from "@/lib/store/useStore";
+import { GROCERY_CATALOG, groceryHasItem } from "@/lib/view/fuel";
 
 interface Macros {
   cal: number;
@@ -32,6 +33,11 @@ export default function BottomSheet() {
   const customFoodDraft = useStore((s) => s.customFoodDraft);
   const setCustomFoodField = useStore((s) => s.setCustomFoodField);
   const saveCustomFood = useStore((s) => s.saveCustomFood);
+  const groceryPickerQuery = useStore((s) => s.groceryPickerQuery);
+  const setGroceryPickerQuery = useStore((s) => s.setGroceryPickerQuery);
+  const groceryPickerSelected = useStore((s) => s.groceryPickerSelected);
+  const toggleGroceryPickerItem = useStore((s) => s.toggleGroceryPickerItem);
+  const addSelectedGroceryItems = useStore((s) => s.addSelectedGroceryItems);
 
   // Editable macro overrides — default to the computed values but can be
   // hand-corrected before logging (e.g. the built-in food's numbers don't
@@ -71,6 +77,10 @@ export default function BottomSheet() {
       if (entry) setEditMacros({ cal: entry.cal, p: entry.p, c: entry.c, f: entry.f });
     }
   }
+
+  const filteredGroceryCatalog = GROCERY_CATALOG.filter((item) =>
+    item.name.toLowerCase().includes(groceryPickerQuery.trim().toLowerCase())
+  );
 
   if (!sheet) return null;
 
@@ -366,6 +376,61 @@ export default function BottomSheet() {
               className="w-full mt-4.5 py-3.5 bg-navy text-gold border-0 rounded-xl font-mono text-[12px] tracking-[0.1em] uppercase font-bold cursor-pointer"
             >
               Save session
+            </button>
+          </>
+        )}
+
+        {sheet.kind === "groceryPicker" && (
+          <>
+            <div className="font-serif font-semibold text-[20px]">Bundle a grocery run</div>
+            <div className="font-mono text-[10.5px] text-dim mt-1">
+              Select everything for this trip, then add it all to the list in one go.
+            </div>
+            <input
+              className="lb-input mt-3.5"
+              type="search"
+              placeholder="Search ingredients…"
+              value={groceryPickerQuery}
+              onChange={(e) => setGroceryPickerQuery(e.target.value)}
+              aria-label="Search grocery catalog"
+            />
+            <div className="mt-2">
+              {filteredGroceryCatalog.map((item) => {
+                const alreadyOn = groceryHasItem(db, item.name);
+                const isSelected = groceryPickerSelected.includes(item.name);
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => !alreadyOn && toggleGroceryPickerItem(item.name)}
+                    disabled={alreadyOn}
+                    className="flex items-center gap-2.5 w-full text-left bg-transparent border-0 border-b border-dashed border-hairline py-2.5 cursor-pointer disabled:cursor-default"
+                    style={{ opacity: alreadyOn ? 0.4 : 1 }}
+                  >
+                    <span
+                      className="w-[18px] h-[18px] min-w-[18px] rounded-[5px] border-[1.5px] font-mono text-[11px] flex items-center justify-center text-gold-dim"
+                      style={{ borderColor: isSelected || alreadyOn ? "var(--gold)" : "rgba(14,42,76,0.2)" }}
+                    >
+                      {isSelected || alreadyOn ? "✓" : ""}
+                    </span>
+                    <span className="flex-1 min-w-0 text-[13.5px] text-ink truncate">{item.name}</span>
+                    <span className="font-mono text-[9.5px] text-dim shrink-0">
+                      {alreadyOn ? "on list" : item.aisle}
+                    </span>
+                  </button>
+                );
+              })}
+              {filteredGroceryCatalog.length === 0 && (
+                <div className="py-3 font-mono text-[11px] text-dim italic">No matches — try another search.</div>
+              )}
+            </div>
+            <button
+              onClick={addSelectedGroceryItems}
+              disabled={!groceryPickerSelected.length}
+              className="w-full mt-4.5 py-3.5 bg-navy text-gold border-0 rounded-xl font-mono text-[12px] tracking-[0.1em] uppercase font-bold cursor-pointer disabled:opacity-50"
+            >
+              {groceryPickerSelected.length
+                ? `Add ${groceryPickerSelected.length} to the list`
+                : "Select items to add"}
             </button>
           </>
         )}

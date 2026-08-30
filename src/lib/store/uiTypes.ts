@@ -36,7 +36,8 @@ export type SheetState =
   | { kind: "options"; title: string; subtitle: string; options: SheetOption[] }
   | { kind: "feedback" }
   | { kind: "customFood"; presetName: string }
-  | { kind: "editFoodEntry"; slot: MealSlot; index: number; name: string };
+  | { kind: "editFoodEntry"; slot: MealSlot; index: number; name: string }
+  | { kind: "groceryPicker" };
 
 export interface CustomFoodDraft {
   name: string;

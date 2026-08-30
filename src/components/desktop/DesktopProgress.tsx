@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { WEEKDAY_LETTERS } from "@/lib/data";
 import { today } from "@/lib/domain/selectors";
 import { useStore } from "@/lib/store/useStore";
 import { CARDIO_TYPES, progressView } from "@/lib/view/progress";
@@ -402,6 +403,13 @@ export default function DesktopProgress() {
               Rest
             </span>
           </div>
+        </div>
+        <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+          {WEEKDAY_LETTERS.map((w, i) => (
+            <div key={i} className="font-mono text-[10px] text-center" style={{ color: "#8896a8" }}>
+              {w}
+            </div>
+          ))}
         </div>
         <div className="grid grid-cols-7 gap-1.5">
           {v.calendar.map((c, i) => (

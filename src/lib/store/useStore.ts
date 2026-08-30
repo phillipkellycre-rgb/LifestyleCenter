@@ -11,6 +11,7 @@ import { emptyState } from "@/lib/domain/seed";
 import { currentWeek, today, todayDayIndex } from "@/lib/domain/selectors";
 import { clamp } from "@/lib/domain/util";
 import { dbRepository } from "@/lib/repository/dbRepository";
+import { GROCERY_CATALOG, groceryHasItem } from "@/lib/view/fuel";
 import type { Db, FoodItem, MealSlot, MeasurementSite, Recipe, SessionFeedback } from "@/lib/domain/types";
 import {
   CARDIO_TYPES,
@@ -36,6 +37,8 @@ interface StoreState {
   foodQuery: string;
   planView: "plan" | "grocery";
   groceryDraft: { name: string; qty: string };
+  groceryPickerQuery: string;
+  groceryPickerSelected: string[];
   calendarMonthOffset: number;
 
   sheet: SheetState | null;
@@ -98,6 +101,10 @@ interface StoreState {
   setGroceryDraftField: (field: "name" | "qty", value: string) => void;
   addGroceryItem: () => void;
   removeGroceryItem: (key: string) => void;
+  openGroceryPicker: () => void;
+  setGroceryPickerQuery: (q: string) => void;
+  toggleGroceryPickerItem: (name: string) => void;
+  addSelectedGroceryItems: () => void;
   swapMeal: (dayIndex: number, mealIndex: number) => void;
 
   startSession: (dayIndex: number) => void;
@@ -173,6 +180,8 @@ export const useStore = create<StoreState>((set, get) => ({
   foodQuery: "",
   planView: "plan",
   groceryDraft: { name: "", qty: "" },
+  groceryPickerQuery: "",
+  groceryPickerSelected: [],
   calendarMonthOffset: 0,
 
   sheet: null,
@@ -383,6 +392,32 @@ export const useStore = create<StoreState>((set, get) => ({
       db.groceryRemoved[key] = true;
       if (db.grocery) delete db.grocery[key];
     });
+  },
+
+  openGroceryPicker: () => set({ sheet: { kind: "groceryPicker" }, groceryPickerQuery: "", groceryPickerSelected: [] }),
+  setGroceryPickerQuery: (q) => set({ groceryPickerQuery: q }),
+  toggleGroceryPickerItem: (name) =>
+    set((s) => ({
+      groceryPickerSelected: s.groceryPickerSelected.includes(name)
+        ? s.groceryPickerSelected.filter((n) => n !== name)
+        : [...s.groceryPickerSelected, name],
+    })),
+  addSelectedGroceryItems: () => {
+    const selected = get().groceryPickerSelected;
+    if (!selected.length) return;
+    get().edit((db) => {
+      db.groceryCustom = db.groceryCustom || [];
+      db.groceryRemoved = db.groceryRemoved || {};
+      selected.forEach((name) => {
+        if (groceryHasItem(db, name)) return;
+        const item = GROCERY_CATALOG.find((c) => c.name === name);
+        const key = `custom:${name.toLowerCase()}:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
+        db.groceryCustom.push({ key, name, qty: item?.qty || "1" });
+      });
+    });
+    const n = selected.length;
+    set({ sheet: null, groceryPickerSelected: [], groceryPickerQuery: "" });
+    get().flash(`${n} item${n === 1 ? "" : "s"} added to the list`);
   },
 
   swapMeal: (dayIndex, mealIndex) => {

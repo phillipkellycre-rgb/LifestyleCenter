@@ -90,6 +90,8 @@ export const SLOT_CODE: Record<import("@/lib/domain/types").MealSlot, SlotCode> 
   Dinner: "D",
 };
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+/** Single-letter Mon-start weekday header for calendar grids. */
+export const WEEKDAY_LETTERS = DAYS.map((d) => d[0]);
 
 /** Indexed directly by JS Date.getDay() (0=Sun..6=Sat) — for workoutDays labels. */
 export const DOW_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

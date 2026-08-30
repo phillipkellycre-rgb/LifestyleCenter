@@ -128,3 +128,40 @@ export function groceryView(db: Db): GroceryGroupVM[] {
   }
   return groups;
 }
+
+export interface GroceryCatalogItemVM {
+  name: string;
+  qty: string;
+  aisle: string;
+}
+
+/**
+ * Every ingredient across every recipe in the app (not just this week's
+ * plan), deduped by name — the pickable pool for bundling a store run
+ * together in one go instead of typing items in one at a time.
+ */
+export const GROCERY_CATALOG: GroceryCatalogItemVM[] = (() => {
+  const seen = new Map<string, GroceryCatalogItemVM>();
+  RECIPES.forEach((r) =>
+    r.ingredients.forEach((i) => {
+      const key = i.name.toLowerCase();
+      if (!seen.has(key)) {
+        seen.set(key, { name: i.name, qty: i.qty, aisle: AISLE_ORDER.includes(i.aisle) ? i.aisle : "Other" });
+      }
+    })
+  );
+  return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+})();
+
+/** True if an item with this name is already visible on the grocery list (derived or custom, not removed). */
+export function groceryHasItem(db: Db, name: string): boolean {
+  const key = name.toLowerCase();
+  const removed = db.groceryRemoved || {};
+  const inCustom = (db.groceryCustom || []).some((c) => c.name.toLowerCase() === key && !removed[c.key]);
+  if (inCustom) return true;
+  return db.mealPlan.some((d) =>
+    d.meals.some((m) =>
+      RECIPES[m.recipeId].ingredients.some((i) => i.name.toLowerCase() === key && !removed[i.name])
+    )
+  );
+}
