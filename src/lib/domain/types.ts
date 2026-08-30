@@ -97,6 +97,8 @@ export interface Profile {
   activity: ActivityLevel;
   goals: Goal[];
   daysPerWeek: 3 | 4 | 5;
+  /** Which weekdays you train — JS Date.getDay() ints (0=Sun..6=Sat), ascending, length === daysPerWeek. */
+  workoutDays: number[];
   targetWeight: number;
   kcalOverride: number | null;
   proteinOverride: number | null;

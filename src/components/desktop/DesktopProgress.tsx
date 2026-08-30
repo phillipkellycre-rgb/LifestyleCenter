@@ -39,9 +39,11 @@ export default function DesktopProgress() {
   const bpError = useStore((s) => s.bpError);
   const saveBp = useStore((s) => s.saveBp);
   const edit = useStore((s) => s.edit);
+  const calendarMonthOffset = useStore((s) => s.calendarMonthOffset);
+  const shiftCalendarMonth = useStore((s) => s.shiftCalendarMonth);
 
   const dateStr = today();
-  const v = progressView(db, dateStr);
+  const v = progressView(db, dateStr, calendarMonthOffset);
 
   return (
     <div className="flex flex-col gap-5">
@@ -354,9 +356,27 @@ export default function DesktopProgress() {
 
       {/* Calendar */}
       <div style={cardStyle} className="p-5">
-        <div className="flex justify-between items-baseline mb-3.5">
-          <div className={sectionLabel} style={{ color: "#8896a8", marginBottom: 0 }}>
-            {v.calendarLabel}
+        <div className="flex justify-between items-center mb-3.5">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => shiftCalendarMonth(-1)}
+              aria-label="Previous month"
+              className="w-[24px] h-[24px] rounded-full border border-hairline bg-transparent cursor-pointer font-mono text-[12px]"
+              style={{ color: "#8896a8" }}
+            >
+              ‹
+            </button>
+            <div className={sectionLabel} style={{ color: "#8896a8", marginBottom: 0 }}>
+              {v.calendarLabel}
+            </div>
+            <button
+              onClick={() => shiftCalendarMonth(1)}
+              aria-label="Next month"
+              className="w-[24px] h-[24px] rounded-full border border-hairline bg-transparent cursor-pointer font-mono text-[12px]"
+              style={{ color: "#8896a8" }}
+            >
+              ›
+            </button>
           </div>
           <div className="flex gap-4 text-[11.5px]" style={{ color: "#8896a8" }}>
             <span className="flex items-center gap-1.5">
@@ -366,9 +386,16 @@ export default function DesktopProgress() {
             <span className="flex items-center gap-1.5">
               <span
                 className="w-[9px] h-[9px] rounded-[3px] inline-block"
-                style={{ border: "1.5px solid var(--navy-3)" }}
+                style={{ border: "1.5px solid var(--gold)" }}
               />
               Planned
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className="w-[9px] h-[9px] rounded-[3px] inline-block"
+                style={{ border: "1.5px solid var(--error)" }}
+              />
+              Missed
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-[9px] h-[9px] rounded-[3px] inline-block" style={{ background: "#eef1f5" }} />

@@ -16,6 +16,13 @@ const GROUP_BASE: Record<MuscleGroup, number> = {
   "Full body": 0.35,
 };
 
+/** A sensible even spread of weekdays for a given days-per-week count. */
+export function defaultWorkoutDays(n: 3 | 4 | 5): number[] {
+  if (n === 3) return [1, 3, 5]; // Mon/Wed/Fri
+  if (n === 4) return [1, 2, 4, 5]; // Mon/Tue/Thu/Fri
+  return [1, 2, 3, 4, 5]; // Mon-Fri
+}
+
 /** Seed working weight for an exercise, scaled off bodyweight by muscle group and equipment. */
 export function seedWeightFor(ex: Exercise, bodyweight: number): number {
   const base = GROUP_BASE[ex.group] ?? 0.4;

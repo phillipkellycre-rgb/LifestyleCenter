@@ -51,8 +51,11 @@ export default function TrainTab() {
         {v.days.map((d) => (
           <div key={d.dayIndex} className="py-[13px] border-b border-dashed border-hairline">
             <div className="flex justify-between items-baseline gap-2.5">
-              <div className="font-serif font-semibold text-[16px]">{d.name}</div>
-              <div className="font-mono text-[10px]" style={{ color: d.stateColor }}>
+              <div className="min-w-0">
+                <div className="font-serif font-semibold text-[16px]">{d.name}</div>
+                {d.dayLabel && <div className="font-mono text-[9.5px] text-dim mt-0.5">{d.dayLabel}</div>}
+              </div>
+              <div className="font-mono text-[10px] shrink-0" style={{ color: d.stateColor }}>
                 {d.state}
               </div>
             </div>

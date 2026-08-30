@@ -1,5 +1,5 @@
 import { DAYS, EXERCISES } from "@/lib/data";
-import { adherence, prFor, volumeOf, weeklyVolumes } from "@/lib/domain/selectors";
+import { adherence, prFor, scheduledDayIndexFor, volumeOf, weeklyVolumes } from "@/lib/domain/selectors";
 import { addDays, clamp, iso } from "@/lib/domain/util";
 import type { Db, MeasurementSite } from "@/lib/domain/types";
 
@@ -74,7 +74,7 @@ export interface ProgressVM {
   calendar: CalendarCellVM[];
 }
 
-export function progressView(db: Db, today: string): ProgressVM {
+export function progressView(db: Db, today: string, monthOffset = 0): ProgressVM {
   const a = adherence(db);
   const vols = weeklyVolumes(db);
   const maxVol = Math.max(1, ...vols.map((x) => x.v));
@@ -163,28 +163,41 @@ export function progressView(db: Db, today: string): ProgressVM {
       ? `Recovery score ${recScore} — hold load, cut the last set of accessories if RPE climbs.`
       : `Recovery score ${recScore} — below your baseline. Drop to 85% and treat today as technique work.`;
 
-  const now = new Date();
-  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  const base = new Date();
+  base.setMonth(base.getMonth() + monthOffset, 1);
+  const first = new Date(base.getFullYear(), base.getMonth(), 1);
   const pad = (first.getDay() + 6) % 7;
-  const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const dim = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
   const calendarLabel = `${first.toLocaleString("en-US", { month: "long" })} ${first.getFullYear()}`;
   const calendar: CalendarCellVM[] = Array.from({ length: pad + dim }, (_, i) => {
     if (i < pad) return { n: "", bg: "transparent", fg: "transparent", border: "transparent", title: "" };
     const dnum = i - pad + 1;
-    const date = iso(new Date(now.getFullYear(), now.getMonth(), dnum));
+    const date = iso(new Date(base.getFullYear(), base.getMonth(), dnum));
     const sessions = db.history.filter((x) => x.date === date);
-    const isFuture = new Date(date) > new Date(today);
-    const isPlanned = !sessions.length && !isFuture && [1, 2, 4, 5].includes(new Date(date).getDay());
+    const isPast = date < today;
+    const isScheduled = scheduledDayIndexFor(db, date) !== null;
+
+    if (sessions.length) {
+      return {
+        n: dnum,
+        bg: "var(--navy-3)",
+        fg: "#fff",
+        border: "var(--navy-3)",
+        title: `${sessions.map((x) => x.name).join(", ")} · ${Math.round(volumeOf(sessions[0]))} lb`,
+      };
+    }
+    if (isScheduled && !isPast) {
+      return { n: dnum, bg: "transparent", fg: "var(--dim)", border: "var(--gold)", title: "Planned" };
+    }
+    if (isScheduled && isPast) {
+      return { n: dnum, bg: "transparent", fg: "var(--error)", border: "var(--error)", title: "Missed" };
+    }
     return {
       n: dnum,
-      bg: sessions.length ? "var(--navy-3)" : "transparent",
-      fg: sessions.length ? "#fff" : "var(--dim)",
-      border: sessions.length ? "var(--navy-3)" : isPlanned ? "var(--gold)" : "var(--hairline)",
-      title: sessions.length
-        ? `${sessions.map((x) => x.name).join(", ")} · ${Math.round(volumeOf(sessions[0]))} lb`
-        : isPlanned
-        ? "Planned"
-        : "Rest",
+      bg: "transparent",
+      fg: "var(--dim)",
+      border: "var(--hairline)",
+      title: date < db.program.startDate ? "Before program start" : "Rest",
     };
   });
 

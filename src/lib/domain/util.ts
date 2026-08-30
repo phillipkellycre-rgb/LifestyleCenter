@@ -14,6 +14,14 @@ export const e1rm = (w: number, r: number): number => Math.round(w * (1 + r / 30
 
 export const fmt = (n: number): string => Math.round(n).toLocaleString();
 
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Formats a "YYYY-MM-DD" string as "Mon D" without going through Date parsing (avoids TZ drift). */
+export function formatIsoDate(dateStr: string): string {
+  const [, m, d] = dateStr.split("-").map(Number);
+  return `${MONTH_ABBR[m - 1]} ${d}`;
+}
+
 /**
  * Ordinary-least-squares line through (0,v0), (1,v1), ... — used for simple
  * personal trend lines (not a statistical or clinical forecast). `project(n)`

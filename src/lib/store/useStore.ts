@@ -36,6 +36,7 @@ interface StoreState {
   foodQuery: string;
   planView: "plan" | "grocery";
   groceryDraft: { name: string; qty: string };
+  calendarMonthOffset: number;
 
   sheet: SheetState | null;
   sheetQty: number;
@@ -70,6 +71,7 @@ interface StoreState {
   setExGroup: (g: string) => void;
   setFoodQuery: (q: string) => void;
   setPlanView: (v: "plan" | "grocery") => void;
+  shiftCalendarMonth: (delta: number) => void;
 
   openFoodSheet: (food: FoodItem) => void;
   openRecipeSheet: (recipe: Recipe, slot: MealSlot) => void;
@@ -135,6 +137,8 @@ interface StoreState {
 
   setProfileField: (field: keyof Db["profile"], value: string | number | null) => void;
   toggleGoal: (goal: Db["profile"]["goals"][number]) => void;
+  toggleWorkoutDay: (dow: number) => void;
+  setProgramStartDate: (date: string) => void;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -169,6 +173,7 @@ export const useStore = create<StoreState>((set, get) => ({
   foodQuery: "",
   planView: "plan",
   groceryDraft: { name: "", qty: "" },
+  calendarMonthOffset: 0,
 
   sheet: null,
   sheetQty: 1,
@@ -229,6 +234,7 @@ export const useStore = create<StoreState>((set, get) => ({
   setExGroup: (exGroup) => set({ exGroup }),
   setFoodQuery: (foodQuery) => set({ foodQuery }),
   setPlanView: (planView) => set({ planView }),
+  shiftCalendarMonth: (delta) => set((s) => ({ calendarMonthOffset: s.calendarMonthOffset + delta })),
 
   openFoodSheet: (food) => set({ sheet: { kind: "food", food }, sheetQty: 1 }),
   openRecipeSheet: (recipe, slot) => set({ sheet: { kind: "recipe", recipe, slot } }),
@@ -700,6 +706,31 @@ export const useStore = create<StoreState>((set, get) => ({
       const ix = db.profile.goals.indexOf(goal);
       if (ix >= 0) db.profile.goals.splice(ix, 1);
       else db.profile.goals.push(goal);
+    });
+  },
+  toggleWorkoutDay: (dow) => {
+    const days = get().db.profile.workoutDays || [];
+    const has = days.includes(dow);
+    if (has && days.length <= 3) {
+      get().flash("You need at least 3 training days.");
+      return;
+    }
+    if (!has && days.length >= 5) {
+      get().flash("Programs support at most 5 training days.");
+      return;
+    }
+    get().edit((db) => {
+      db.profile.workoutDays = db.profile.workoutDays || [];
+      const ix = db.profile.workoutDays.indexOf(dow);
+      if (ix >= 0) db.profile.workoutDays.splice(ix, 1);
+      else db.profile.workoutDays.push(dow);
+      db.profile.workoutDays.sort((a, b) => a - b);
+      db.profile.daysPerWeek = clamp(db.profile.workoutDays.length, 3, 5) as 3 | 4 | 5;
+    });
+  },
+  setProgramStartDate: (date) => {
+    get().edit((db) => {
+      db.program.startDate = date;
     });
   },
 }));

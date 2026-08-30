@@ -45,7 +45,9 @@ export default function TodayTab() {
       <section className="px-[22px] pt-[22px]">
         <div className="flex items-baseline justify-between">
           <span className="font-serif font-semibold text-[18px]">Training Manifest</span>
-          <span className="font-mono text-[10px] text-dim">{v.workoutTag}</span>
+          <span className="font-mono text-[10px]" style={{ color: v.restDay ? "var(--gold-dim)" : "var(--dim)" }}>
+            {v.workoutTag}
+          </span>
         </div>
         <div className="h-px bg-hairline my-2.5 mb-3" />
         {v.exercises.map((e) => (
@@ -79,7 +81,8 @@ export default function TodayTab() {
         ))}
         <button
           onClick={startWorkout}
-          className="w-full mt-4 py-3.5 rounded-xl bg-navy text-gold border-0 font-mono text-[12px] tracking-[0.1em] uppercase font-bold cursor-pointer"
+          disabled={v.startDisabled}
+          className="w-full mt-4 py-3.5 rounded-xl bg-navy text-gold border-0 font-mono text-[12px] tracking-[0.1em] uppercase font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
           {v.startLabel}
         </button>

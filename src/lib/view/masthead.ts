@@ -1,7 +1,7 @@
 import { computeTargets } from "@/lib/domain/calc";
 import { phaseFor } from "@/lib/domain/program";
-import { adherence, currentWeek, dayTotals, today, todayPlan, weeklyVolumes } from "@/lib/domain/selectors";
-import { clamp, fmt } from "@/lib/domain/util";
+import { adherence, currentWeek, dayTotals, isBeforeStart, isRestDay, today, todayPlan, weeklyVolumes } from "@/lib/domain/selectors";
+import { clamp, fmt, formatIsoDate } from "@/lib/domain/util";
 import { DAYS } from "@/lib/data";
 import { wellnessScore } from "@/lib/view/wellness";
 import type { Db } from "@/lib/domain/types";
@@ -27,9 +27,11 @@ export function mastheadFor(tab: TabId, db: Db): MastheadProps {
   const week = currentWeek(db);
   const phase = phaseFor(week);
   const water = (db.water || {})[dateStr] || 0;
-  const dayNo = Math.round((Date.now() - new Date(db.program.startDate).getTime()) / 864e5);
+  const dayNo = Math.max(0, Math.round((Date.now() - new Date(db.program.startDate).getTime()) / 864e5));
   const plan = todayPlan(db);
   const doneToday = db.history.filter((s) => s.date === dateStr);
+  const beforeStart = isBeforeStart(db, dateStr);
+  const restDay = isRestDay(db, dateStr);
 
   if (tab === "fuel") {
     return {
@@ -116,10 +118,18 @@ export function mastheadFor(tab: TabId, db: Db): MastheadProps {
   }
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning, " : hour < 18 ? "Good afternoon, " : "Good evening, ";
+  const eyebrow = beforeStart
+    ? `Program starts ${formatIsoDate(db.program.startDate)}`
+    : `Entry No. ${dayNo} · Day ${dayNo} of Program`;
+  const sub = beforeStart
+    ? `${db.program.days.length} sessions per week once it begins`
+    : restDay
+    ? `Rest day · ${fmt(t.kcal)} kcal target`
+    : `${plan.name} · ${fmt(t.kcal)} kcal voyage`;
   return {
-    eyebrow: `Entry No. ${dayNo} · Day ${dayNo} of Program`,
+    eyebrow,
     title: greeting + db.profile.name,
-    sub: `${plan.name} · ${fmt(t.kcal)} kcal voyage`,
+    sub,
     ringVal: `${a.score}%`,
     ringLabel: "SCORE",
     ringPct: ringOf(a.score / 100),

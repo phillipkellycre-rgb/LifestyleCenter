@@ -1,4 +1,4 @@
-import { exByName } from "@/lib/data";
+import { DOW_NAMES, exByName } from "@/lib/data";
 import { phaseFor } from "@/lib/domain/program";
 import { currentWeek, exerciseName, prFor, weeklyVolumes } from "@/lib/domain/selectors";
 import { clamp, fmt } from "@/lib/domain/util";
@@ -21,6 +21,7 @@ export interface DayExerciseVM {
 export interface DayRowVM {
   dayIndex: number;
   name: string;
+  dayLabel: string;
   state: string;
   stateColor: string;
   exercises: DayExerciseVM[];
@@ -80,11 +81,14 @@ export function trainView(db: Db): TrainVM {
     };
   });
 
+  const sortedWorkoutDays = [...(db.profile.workoutDays || [])].sort((a, b) => a - b);
   const days: DayRowVM[] = db.program.days.map((d, di) => {
     const logged = db.history.filter((s) => s.week === selWeek && s.dayIndex === di);
+    const dow = sortedWorkoutDays[di];
     return {
       dayIndex: di,
       name: d.name,
+      dayLabel: dow !== undefined ? DOW_NAMES[dow] : "",
       state: logged.length ? "COMPLETED" : selWeek < week ? "MISSED" : selWeek === week ? "PLANNED" : "UPCOMING",
       stateColor: logged.length ? "var(--navy-3)" : selWeek < week ? "var(--error)" : "var(--dim)",
       exercises: d.exercises.map((pe, exIndex) => ({ exIndex, exId: pe.exId, name: exerciseName(pe.exId) })),

@@ -23,9 +23,11 @@ export default function ProgressTab() {
   const bpError = useStore((s) => s.bpError);
   const saveBp = useStore((s) => s.saveBp);
   const edit = useStore((s) => s.edit);
+  const calendarMonthOffset = useStore((s) => s.calendarMonthOffset);
+  const shiftCalendarMonth = useStore((s) => s.shiftCalendarMonth);
 
   const dateStr = today();
-  const v = progressView(db, dateStr);
+  const v = progressView(db, dateStr, calendarMonthOffset);
 
   // Each card is its own top-level <section> (matching Today/Train/Fuel's
   // pattern) so the desktop shell's grid can lay them out as independent
@@ -270,7 +272,23 @@ export default function ProgressTab() {
 
       <section className="px-[22px] pt-[22px] pb-[26px]">
         <div className="bg-card-bg border border-hairline rounded-[14px] p-4">
-          <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">{v.calendarLabel}</div>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => shiftCalendarMonth(-1)}
+              aria-label="Previous month"
+              className="w-[26px] h-[26px] rounded-full border border-hairline bg-transparent text-navy-3 cursor-pointer font-mono text-[13px]"
+            >
+              ‹
+            </button>
+            <div className="font-mono text-[10px] tracking-[0.12em] uppercase text-dim">{v.calendarLabel}</div>
+            <button
+              onClick={() => shiftCalendarMonth(1)}
+              aria-label="Next month"
+              className="w-[26px] h-[26px] rounded-full border border-hairline bg-transparent text-navy-3 cursor-pointer font-mono text-[13px]"
+            >
+              ›
+            </button>
+          </div>
           <div className="grid grid-cols-7 gap-1 mt-2.5">
             {v.calendar.map((c, i) => (
               <div
@@ -283,7 +301,9 @@ export default function ProgressTab() {
               </div>
             ))}
           </div>
-          <div className="font-mono text-[9px] text-dim mt-2">Navy: completed · Gold outline: planned · Grey: rest</div>
+          <div className="font-mono text-[9px] text-dim mt-2">
+            Navy: completed · Gold outline: planned · Red: missed · Grey: rest
+          </div>
         </div>
       </section>
     </>

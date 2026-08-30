@@ -91,6 +91,10 @@ export const SLOT_CODE: Record<import("@/lib/domain/types").MealSlot, SlotCode> 
 };
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+/** Indexed directly by JS Date.getDay() (0=Sun..6=Sat) — for workoutDays labels. */
+export const DOW_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export const TAB_ICONS: Record<string, string> = {
   today: "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 3",
   train: "M6 7v10M18 7v10M2 10v4M22 10v4M6 12h12",

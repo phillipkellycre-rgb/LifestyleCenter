@@ -18,8 +18,38 @@ export function currentWeek(db: Db): number {
   return clamp(wk, 1, 12);
 }
 
+/**
+ * The program-day index scheduled for a given date, based on the user's
+ * chosen weekdays (Profile.workoutDays) — or null if that date is before
+ * the program's start date, or its weekday isn't one of the chosen days.
+ */
+export function scheduledDayIndexFor(db: Db, date: string): number | null {
+  if (date < db.program.startDate) return null;
+  const dow = new Date(date).getDay();
+  const sorted = [...(db.profile.workoutDays || [])].sort((a, b) => a - b);
+  const idx = sorted.indexOf(dow);
+  if (idx === -1 || idx >= db.program.days.length) return null;
+  return idx;
+}
+
+export function isBeforeStart(db: Db, date: string = today()): boolean {
+  return date < db.program.startDate;
+}
+
+export function isRestDay(db: Db, date: string = today()): boolean {
+  return !isBeforeStart(db, date) && scheduledDayIndexFor(db, date) === null;
+}
+
+/**
+ * Which program day to show/start right now. Prefers today's actually
+ * scheduled day (from workoutDays); falls back to the old sequential
+ * rotation so an ad-hoc session on a rest day still picks up where the
+ * last one left off.
+ */
 export function todayDayIndex(db: Db): number {
   const t = today();
+  const scheduled = scheduledDayIndexFor(db, t);
+  if (scheduled !== null) return scheduled;
   const done = db.history.filter((s) => s.date === t);
   if (done.length) return done[done.length - 1].dayIndex;
   const last = db.history[db.history.length - 1];

@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { DOW_SHORT } from "@/lib/data";
 import { computeTargets } from "@/lib/domain/calc";
 import { phaseFor } from "@/lib/domain/program";
-import { currentWeek } from "@/lib/domain/selectors";
-import { fmt } from "@/lib/domain/util";
+import { currentWeek, isBeforeStart, today } from "@/lib/domain/selectors";
+import { fmt, formatIsoDate } from "@/lib/domain/util";
 import { useStore } from "@/lib/store/useStore";
 import { COACH_PROMPTS, insightsView } from "@/lib/view/more";
 import type { ActivityLevel, Goal, Phase, Sex } from "@/lib/domain/types";
+
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon..Sun, as JS Date.getDay() values
 
 const PHASE_ROWS: { phase: Phase; weeks: string; blurb: string }[] = [
   { phase: "Foundation", weeks: "Weeks 1–3", blurb: "Groove the rep ranges at a manageable effort before pushing load." },
@@ -57,15 +60,19 @@ export default function MoreTab() {
   const askCoachPrompt = useStore((s) => s.askCoachPrompt);
   const setProfileField = useStore((s) => s.setProfileField);
   const toggleGoal = useStore((s) => s.toggleGoal);
-  const edit = useStore((s) => s.edit);
+  const toggleWorkoutDay = useStore((s) => s.toggleWorkoutDay);
+  const setProgramStartDate = useStore((s) => s.setProgramStartDate);
   const rebuildProgram = useStore((s) => s.rebuildProgram);
   const resetAll = useStore((s) => s.resetAll);
 
   const t = computeTargets(db.profile);
   const insights = insightsView(db);
   const goals = db.profile.goals || [];
+  const workoutDays = db.profile.workoutDays || [];
   const week = currentWeek(db);
   const phase = phaseFor(week);
+  const dateStr = today();
+  const beforeStart = isBeforeStart(db, dateStr);
   const engineLine = `Mifflin-St Jeor BMR × ${db.profile.activity.toLowerCase()} activity, ${
     goals.includes("Fat loss") ? "500 kcal deficit" : goals.includes("Muscle gain") ? "300 kcal surplus" : "maintenance"
   }. Fiber target ${t.fiber}g. Everything you log is synced to your account.`;
@@ -249,23 +256,6 @@ export default function MoreTab() {
               ))}
             </select>
           </Field>
-          <Field label="Days / week">
-            <select
-              className="lb-input"
-              value={db.profile.daysPerWeek}
-              onChange={(e) =>
-                edit((d) => {
-                  d.profile.daysPerWeek = Number(e.target.value) as 3 | 4 | 5;
-                })
-              }
-            >
-              {[3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </Field>
           <Field label="Kcal override">
             <input
               className="lb-input"
@@ -284,6 +274,46 @@ export default function MoreTab() {
               }
             />
           </Field>
+        </div>
+
+        <label className="font-mono text-[9px] tracking-[0.1em] uppercase text-dim block mb-1 mt-3.5">
+          Workout days
+        </label>
+        <div className="flex gap-1.5 flex-wrap">
+          {WEEK_ORDER.map((dow) => {
+            const on = workoutDays.includes(dow);
+            return (
+              <button
+                key={dow}
+                onClick={() => toggleWorkoutDay(dow)}
+                className="py-[7px] px-2.5 rounded-full border font-mono text-[10px] cursor-pointer"
+                style={{
+                  background: on ? "var(--navy)" : "#fff",
+                  color: on ? "var(--gold)" : "var(--navy-3)",
+                  borderColor: on ? "var(--navy)" : "var(--hairline)",
+                }}
+              >
+                {DOW_SHORT[dow]}
+              </button>
+            );
+          })}
+        </div>
+        <div className="font-mono text-[9px] text-dim mt-1.5">
+          {workoutDays.length} days selected (3–5). Rebuild the program below to apply a change in count.
+        </div>
+
+        <Field label="Workout start date">
+          <input
+            className="lb-input"
+            type="date"
+            value={db.program.startDate}
+            onChange={(e) => e.target.value && setProgramStartDate(e.target.value)}
+          />
+        </Field>
+        <div className="font-mono text-[9px] text-dim mt-1.5">
+          {beforeStart
+            ? `Program begins ${formatIsoDate(db.program.startDate)} — Week 1 starts that day.`
+            : `Week ${week} of 12, started ${formatIsoDate(db.program.startDate)}.`}
         </div>
 
         <div className="flex gap-1.5 flex-wrap mt-3.5">

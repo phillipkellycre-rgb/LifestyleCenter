@@ -1,6 +1,6 @@
 import { computeTargets } from "./calc";
 import { buildMealPlan } from "./mealPlan";
-import { buildProgram } from "./program";
+import { buildProgram, defaultWorkoutDays } from "./program";
 import { iso } from "./util";
 import type { Db, Profile } from "./types";
 
@@ -14,6 +14,7 @@ export function defaultProfile(): Profile {
     activity: "Moderate",
     goals: ["General fitness"],
     daysPerWeek: 4,
+    workoutDays: defaultWorkoutDays(4),
     targetWeight: 170,
     kcalOverride: null,
     proteinOverride: null,

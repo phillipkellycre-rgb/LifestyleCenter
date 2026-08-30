@@ -2,8 +2,8 @@ import { EXERCISES, RECIPES } from "@/lib/data";
 import { computeTargets } from "@/lib/domain/calc";
 import { phaseFor } from "@/lib/domain/program";
 import { progression } from "@/lib/domain/progression";
-import { adherence, currentWeek, dayTotals, exerciseName, today, todayPlan } from "@/lib/domain/selectors";
-import { fmt } from "@/lib/domain/util";
+import { adherence, currentWeek, dayTotals, exerciseName, isBeforeStart, isRestDay, today, todayPlan } from "@/lib/domain/selectors";
+import { fmt, formatIsoDate } from "@/lib/domain/util";
 import type { Db, MealSlot } from "@/lib/domain/types";
 
 export interface TodayExerciseVM {
@@ -33,6 +33,8 @@ export interface TodayVM {
   workoutTag: string;
   fuelTag: string;
   startLabel: string;
+  startDisabled: boolean;
+  restDay: boolean;
   exercises: TodayExerciseVM[];
   meals: TodayMealVM[];
   waterLine: string;
@@ -53,6 +55,8 @@ export function todayView(db: Db): TodayVM {
   const doneToday = db.history.filter((s) => s.date === dateStr);
   const completed = db.completedToday || [];
   const water = (db.water || {})[dateStr] || 0;
+  const beforeStart = isBeforeStart(db, dateStr);
+  const restDay = isRestDay(db, dateStr);
 
   const exercises: TodayExerciseVM[] = plan.exercises.map((pe) => {
     const pr = progression(pe, phase, db.history);
@@ -98,10 +102,25 @@ export function todayView(db: Db): TodayVM {
   else noteBits.push(`Protein is on pace at ${Math.round(tot.p)}g.`);
   if (phase === "Deload") noteBits.push("Deload week: loads at 85%, one fewer set. Let the fatigue clear.");
 
+  const workoutTag = beforeStart
+    ? `STARTS ${formatIsoDate(db.program.startDate).toUpperCase()}`
+    : restDay
+    ? "REST DAY"
+    : `WK ${week} — ${plan.name.toUpperCase()}`;
+  const startLabel = beforeStart
+    ? `Program starts ${formatIsoDate(db.program.startDate)}`
+    : doneToday.length
+    ? "Session logged — open again"
+    : restDay
+    ? "Rest day — start anyway"
+    : "Start workout";
+
   return {
-    workoutTag: `WK ${week} — ${plan.name.toUpperCase()}`,
+    workoutTag,
     fuelTag: `${fmt(tot.cal)} / ${fmt(t.kcal)} KCAL`,
-    startLabel: doneToday.length ? "Session logged — open again" : "Start workout",
+    startLabel,
+    startDisabled: beforeStart,
+    restDay,
     exercises,
     meals,
     waterLine: `${water} / 100 OZ`,
